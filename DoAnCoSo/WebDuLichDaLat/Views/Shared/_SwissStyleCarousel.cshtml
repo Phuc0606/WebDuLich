@@ -1,0 +1,342 @@
+@model List<WebDuLichDaLat.Models.TouristPlace>
+
+@{
+    var displayPlaces = Model?.Take(8) ?? new List<WebDuLichDaLat.Models.TouristPlace>();
+    
+    string GetImageUrl(string imageUrl)
+    {
+        if (string.IsNullOrEmpty(imageUrl))
+            return "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop";
+        
+        if (imageUrl.StartsWith("http"))
+            return imageUrl;
+        
+        return $"/Images/{System.IO.Path.GetFileName(imageUrl)}";
+    }
+    
+    string GetRandomRating()
+    {
+        var ratings = new[] { "4.2", "4.5", "4.7", "4.8", "4.9", "5.0" };
+        return ratings[new Random().Next(ratings.Length)];
+    }
+}
+
+<!-- Swiss Style Dark Theme Carousel -->
+<section style="padding: 100px 0; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); position: relative; overflow: hidden;">
+    <!-- Background Pattern -->
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.02) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.02) 0%, transparent 50%); pointer-events: none;"></div>
+    
+    <div class="container" style="position: relative; z-index: 2;">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h2 style="font-family: 'Inter', sans-serif; font-size: 3.5rem; font-weight: 800; color: #ffffff; margin-bottom: 1rem; letter-spacing: -0.02em;">
+                Điểm đến phổ biến
+            </h2>
+            <p style="font-size: 1.3rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 4rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+                Khám phá những địa điểm tuyệt đẹp tại Đà Lạt với trải nghiệm không thể quên
+            </p>
+        </div>
+
+        <!-- Swiss Style Carousel Container -->
+        <div id="swissCarousel" style="position: relative; overflow: hidden; border-radius: 24px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px;">
+            <div id="swissTrack" style="display: flex; gap: 30px; transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); padding: 20px 0;">
+                
+                @if (displayPlaces.Any())
+                {
+                    @foreach (var place in displayPlaces)
+                    {
+                        <div class="swiss-card" style="flex: 0 0 22%; min-width: 320px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 20px; overflow: hidden; transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); cursor: pointer; position: relative;">
+                            <a href="@Url.Action("Display", "TouristPlace", new { id = place.Id })" style="text-decoration: none; color: inherit; display: block;">
+                                <!-- Card Image -->
+                                <div style="position: relative; height: 280px; overflow: hidden;">
+                                    <img src="@GetImageUrl(place.ImageUrl)" 
+                                         alt="@place.Name" 
+                                         style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;"
+                                         onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop'">
+                                    
+                                    <!-- Premium Gradient Overlay -->
+                                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.8) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 25px;">
+                                        
+                                        <!-- Rating Badge -->
+                                        <div style="align-self: flex-end; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 10px 16px; border-radius: 25px; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: #1a1a2e; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);">
+                                            <i class="bi bi-star-fill" style="color: #ffd700; font-size: 16px;"></i>
+                                            <span>@GetRandomRating()</span>
+                                        </div>
+                                        
+                                        <!-- Title -->
+                                        <div>
+                                            <h3 style="color: #ffffff; font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; text-shadow: 0 4px 15px rgba(0,0,0,0.5); letter-spacing: -0.01em; line-height: 1.2;">
+                                                @place.Name
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card Content -->
+                                <div style="padding: 30px 25px;">
+                                    @if (place.Region != null)
+                                    {
+                                        <div style="display: flex; align-items: center; gap: 10px; color: rgba(255, 255, 255, 0.7); font-size: 15px; margin-bottom: 20px; font-weight: 500;">
+                                            <i class="bi bi-geo-alt-fill" style="color: #ff6b9d; font-size: 16px;"></i>
+                                            <span>@place.Region.Name, Đà Lạt</span>
+                                        </div>
+                                    }
+                                    
+                                    <!-- Stats -->
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <div style="display: flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.6); font-size: 14px; font-weight: 500;">
+                                            <i class="bi bi-eye-fill" style="color: #4ade80; font-size: 15px;"></i>
+                                            <span>@(new Random().Next(150, 999)) lượt xem</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.6); font-size: 14px; font-weight: 500;">
+                                            <i class="bi bi-heart-fill" style="color: #ff6b9d; font-size: 15px;"></i>
+                                            <span>@(new Random().Next(50, 200))</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    @* Demo cards *@
+                    var demoImages = new[] {
+                        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1501436513145-30f24e19fcc4?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop"
+                    };
+                    var demoNames = new[] { "Thung Lũng Tình Yêu", "Hồ Xuân Hương", "Dinh Bảo Đại", "Chợ Đà Lạt", "Ga Đà Lạt", "Thiền Viện Trúc Lâm" };
+                    
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        <div class="swiss-card" style="flex: 0 0 22%; min-width: 320px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 20px; overflow: hidden; transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); cursor: pointer; position: relative;">
+                            <a href="@Url.Action("Index", "TouristPlace")" style="text-decoration: none; color: inherit; display: block;">
+                                <div style="position: relative; height: 280px; overflow: hidden;">
+                                    <img src="@demoImages[i % demoImages.Length]" 
+                                         alt="@demoNames[i % demoNames.Length]" 
+                                         style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;">
+                                    
+                                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.8) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 25px;">
+                                        <div style="align-self: flex-end; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 10px 16px; border-radius: 25px; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: #1a1a2e; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);">
+                                            <i class="bi bi-star-fill" style="color: #ffd700; font-size: 16px;"></i>
+                                            <span>@GetRandomRating()</span>
+                                        </div>
+                                        
+                                        <div>
+                                            <h3 style="color: #ffffff; font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; text-shadow: 0 4px 15px rgba(0,0,0,0.5); letter-spacing: -0.01em; line-height: 1.2;">
+                                                @demoNames[i % demoNames.Length]
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="padding: 30px 25px;">
+                                    <div style="display: flex; align-items: center; gap: 10px; color: rgba(255, 255, 255, 0.7); font-size: 15px; margin-bottom: 20px; font-weight: 500;">
+                                        <i class="bi bi-geo-alt-fill" style="color: #ff6b9d; font-size: 16px;"></i>
+                                        <span>Phường @(i + 1), Đà Lạt</span>
+                                    </div>
+                                    
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <div style="display: flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.6); font-size: 14px; font-weight: 500;">
+                                            <i class="bi bi-eye-fill" style="color: #4ade80; font-size: 15px;"></i>
+                                            <span>@(new Random().Next(150, 999)) lượt xem</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.6); font-size: 14px; font-weight: 500;">
+                                            <i class="bi bi-heart-fill" style="color: #ff6b9d; font-size: 15px;"></i>
+                                            <span>@(new Random().Next(50, 200))</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+            </div>
+            
+            <!-- Premium Navigation Arrows -->
+            <button onclick="moveSwissCarousel(-1)" style="position: absolute; left: -30px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); z-index: 10; color: #ffffff;">
+                <i class="bi bi-chevron-left" style="font-size: 22px; font-weight: bold;"></i>
+            </button>
+            
+            <button onclick="moveSwissCarousel(1)" style="position: absolute; right: -30px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); z-index: 10; color: #ffffff;">
+                <i class="bi bi-chevron-right" style="font-size: 22px; font-weight: bold;"></i>
+            </button>
+        </div>
+
+        <!-- Dots Indicator -->
+        <div id="swissDots" style="display: flex; justify-content: center; gap: 15px; margin-top: 50px;">
+            <!-- Dots will be generated by JavaScript -->
+        </div>
+
+        <!-- View All Button -->
+        <div class="text-center mt-5">
+            <a href="@Url.Action("Index", "TouristPlace")" style="display: inline-flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #ff6b9d 0%, #667eea 100%); color: white; text-decoration: none; padding: 18px 36px; border-radius: 35px; font-weight: 700; font-size: 17px; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: 0 15px 35px rgba(255, 107, 157, 0.3); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1);">
+                <span>Khám phá tất cả địa điểm</span>
+                <i class="bi bi-arrow-right" style="font-size: 18px; transition: transform 0.3s ease;"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<script>
+let swissCurrentIndex = 0;
+let swissMaxIndex = 0;
+
+function initSwissCarousel() {
+    const track = document.getElementById('swissTrack');
+    const cards = track.children;
+    const cardsToShow = window.innerWidth > 1200 ? 4.5 : (window.innerWidth > 768 ? 2.5 : 1.2);
+    
+    swissMaxIndex = Math.max(0, cards.length - Math.floor(cardsToShow));
+    
+    // Create dots
+    const dotsContainer = document.getElementById('swissDots');
+    dotsContainer.innerHTML = '';
+    
+    for (let i = 0; i <= swissMaxIndex; i++) {
+        const dot = document.createElement('button');
+        dot.style.cssText = 'width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; transition: all 0.4s ease; background: rgba(255, 255, 255, 0.3);';
+        dot.onclick = function() { goToSwissSlide(i); };
+        dotsContainer.appendChild(dot);
+    }
+    
+    updateSwissCarousel();
+}
+
+function moveSwissCarousel(direction) {
+    swissCurrentIndex += direction;
+    
+    if (swissCurrentIndex < 0) swissCurrentIndex = 0;
+    if (swissCurrentIndex > swissMaxIndex) swissCurrentIndex = swissMaxIndex;
+    
+    updateSwissCarousel();
+}
+
+function goToSwissSlide(index) {
+    swissCurrentIndex = index;
+    updateSwissCarousel();
+}
+
+function updateSwissCarousel() {
+    const track = document.getElementById('swissTrack');
+    const cardsToShow = window.innerWidth > 1200 ? 4.5 : (window.innerWidth > 768 ? 2.5 : 1.2);
+    const cardWidth = 100 / cardsToShow;
+    const translateX = -(swissCurrentIndex * cardWidth);
+    
+    track.style.transform = 'translateX(' + translateX + '%)';
+    
+    // Update dots
+    const dots = document.querySelectorAll('#swissDots button');
+    dots.forEach(function(dot, index) {
+        if (index === swissCurrentIndex) {
+            dot.style.background = 'linear-gradient(135deg, #ff6b9d, #667eea)';
+            dot.style.transform = 'scale(1.3)';
+            dot.style.boxShadow = '0 8px 20px rgba(255, 107, 157, 0.4)';
+        } else {
+            dot.style.background = 'rgba(255, 255, 255, 0.3)';
+            dot.style.transform = 'scale(1)';
+            dot.style.boxShadow = 'none';
+        }
+    });
+}
+
+// Enhanced hover effects
+document.addEventListener('DOMContentLoaded', function() {
+    initSwissCarousel();
+    
+    const cards = document.querySelectorAll('.swiss-card');
+    
+    cards.forEach(function(card) {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-20px) scale(1.02)';
+            this.style.boxShadow = '0 25px 60px rgba(0, 0, 0, 0.3)';
+            this.style.background = 'rgba(255, 255, 255, 0.12)';
+            this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            
+            const img = this.querySelector('img');
+            if (img) img.style.transform = 'scale(1.1)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.boxShadow = 'none';
+            this.style.background = 'rgba(255, 255, 255, 0.08)';
+            this.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+            
+            const img = this.querySelector('img');
+            if (img) img.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Navigation hover effects
+    const navButtons = document.querySelectorAll('#swissCarousel button');
+    navButtons.forEach(function(btn) {
+        if (btn.onclick && btn.onclick.toString().includes('moveSwissCarousel')) {
+            btn.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(255, 255, 255, 0.2)';
+                this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                this.style.transform = 'translateY(-50%) scale(1.1)';
+                this.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.2)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(255, 255, 255, 0.1)';
+                this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                this.style.transform = 'translateY(-50%) scale(1)';
+                this.style.boxShadow = 'none';
+            });
+        }
+    });
+    
+    // View all button hover
+    const viewAllBtn = document.querySelector('a[href*="TouristPlace"]');
+    if (viewAllBtn && viewAllBtn.style.background.includes('gradient')) {
+        viewAllBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px) scale(1.05)';
+            this.style.boxShadow = '0 20px 45px rgba(255, 107, 157, 0.4)';
+            this.querySelector('i').style.transform = 'translateX(8px)';
+        });
+        
+        viewAllBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.boxShadow = '0 15px 35px rgba(255, 107, 157, 0.3)';
+            this.querySelector('i').style.transform = 'translateX(0)';
+        });
+    }
+});
+
+// Auto-play with pause on hover
+let swissAutoPlay = setInterval(function() {
+    if (swissCurrentIndex >= swissMaxIndex) {
+        swissCurrentIndex = 0;
+    } else {
+        swissCurrentIndex++;
+    }
+    updateSwissCarousel();
+}, 7000);
+
+// Pause on hover
+document.getElementById('swissCarousel').addEventListener('mouseenter', function() {
+    clearInterval(swissAutoPlay);
+});
+
+document.getElementById('swissCarousel').addEventListener('mouseleave', function() {
+    swissAutoPlay = setInterval(function() {
+        if (swissCurrentIndex >= swissMaxIndex) {
+            swissCurrentIndex = 0;
+        } else {
+            swissCurrentIndex++;
+        }
+        updateSwissCarousel();
+    }, 7000);
+});
+
+// Responsive handling
+window.addEventListener('resize', function() {
+    setTimeout(initSwissCarousel, 100);
+});
+</script>

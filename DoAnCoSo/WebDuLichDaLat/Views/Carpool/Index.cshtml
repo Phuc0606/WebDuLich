@@ -1,0 +1,2348 @@
+@model WebDuLichDaLat.Models.CarpoolViewModel
+@{
+    ViewData["Title"] = "Ghép xe đi chung";
+    ViewBag.HideFooter = true;
+}
+
+@if (!string.IsNullOrEmpty(Model?.StatusMessage))
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        @Model.StatusMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="carpool-container">
+    <form asp-action="Index" method="post" id="carpoolForm">
+        <div class="carpool-layout">
+            <!-- Left Column: Customer Information -->
+            <div class="carpool-left-panel">
+                <div class="carpool-section">
+                    <h5 class="carpool-section-title">Thông tin khách hàng</h5>
+                    <div class="customer-avatar-section">
+                        <div class="customer-avatar">
+                            <i class="bi bi-person-circle"></i>
+                            <div class="avatar-badge">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        </div>
+                        <div class="customer-form-fields">
+                            <div class="form-group mb-3">
+                                <label asp-for="PassengerName" class="form-label">Tên khách hàng</label>
+                                <input asp-for="PassengerName" class="form-control" placeholder="Tên khách hàng" required />
+                                <span asp-validation-for="PassengerName" class="text-danger"></span>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label asp-for="PhoneNumber" class="form-label">Số điện thoại</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="Số điện thoại" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Điểm đón</label>
+                                <input type="text" id="pickupAddressDisplay" class="form-control" placeholder="Chưa chọn điểm đón" readonly />
+                                <button type="button" class="btn btn-pickup-point mt-2" onclick="showPickupModal()">
+                                    Điểm đón
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="carpool-section">
+                    <h5 class="carpool-section-title">Thông tin chuyến đi</h5>
+                    <div class="trip-form-fields">
+                        <div class="form-group mb-3">
+                            <label asp-for="NumberOfPassengers" class="form-label">Số lượng khách</label>
+                            <select asp-for="NumberOfPassengers" class="form-select">
+                                @for (int i = 1; i <= 16; i++)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </select>
+                            <span asp-validation-for="NumberOfPassengers" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="RequestedVehicleSeats" class="form-label">Loại xe mong muốn</label>
+                            <select asp-for="RequestedVehicleSeats" class="form-select">
+                                <option value="">Loại xe</option>
+                                @foreach (var seats in Model.SeatOptions)
+                                {
+                                    <option value="@seats">Xe @seats chỗ</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="PrivateGroup" class="form-check-input" type="checkbox" id="privateGroupCheck" />
+                                <label class="form-check-label" for="privateGroupCheck">Nhóm riêng</label>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label asp-for="PreferredDepartureTime" class="form-label">Thời gian khởi hành mong muốn</label>
+                            <input asp-for="PreferredDepartureTime" class="form-control" type="datetime-local" required />
+                            <span asp-validation-for="PreferredDepartureTime" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label">Điểm đến</label>
+                            <input type="text" id="dropoffAddressDisplay" class="form-control" placeholder="Chưa chọn điểm đến" readonly />
+                            <button type="button" class="btn btn-pickup-point mt-2" onclick="showDropoffModal()">
+                                Điểm đến
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Column: Map and Trip Info -->
+            <div class="carpool-center-panel">
+                <!-- Trip Stats Bar -->
+                <div class="trip-stats-bar">
+                    <div class="trip-stat-item distance-stat">
+                        <i class="bi bi-signpost-split"></i>
+                        <div class="stat-content">
+                            <span class="stat-label">Khoảng cách</span>
+                            <span class="stat-value" id="tripDistance"><span id="distanceValue">0</span> <span class="stat-unit">km</span></span>
+                        </div>
+                    </div>
+                    <div class="trip-stat-item passenger-stat">
+                        <i class="bi bi-people"></i>
+                        <div class="stat-content">
+                            <span class="stat-label">Số khách</span>
+                            <span class="stat-value" id="passengerNumber"><span id="passengerCount">1</span> <span class="stat-unit">người</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map -->
+                <div id="map" class="carpool-map"></div>
+
+                <!-- Hidden inputs for addresses -->
+                <input type="hidden" asp-for="PickupAddress" id="pickupAddress" />
+                <input type="hidden" asp-for="PickupLatitude" id="pickupLat" />
+                <input type="hidden" asp-for="PickupLongitude" id="pickupLng" />
+                <input type="hidden" asp-for="DropoffAddress" id="dropoffAddress" />
+                <input type="hidden" asp-for="DropoffLatitude" id="dropoffLat" />
+                <input type="hidden" asp-for="DropoffLongitude" id="dropoffLng" />
+            </div>
+
+            <!-- Right Column: Trips Sidebar -->
+            <div class="carpool-right-panel">
+                <div class="trips-sidebar-header">
+                    <h5 class="trips-title">Chuyến đi</h5>
+                    <i class="bi bi-search"></i>
+                </div>
+                <div class="trips-list">
+                    @if (Model.OpenTrips != null && Model.OpenTrips.Any())
+                    {
+                        @foreach (var trip in Model.OpenTrips.Take(4))
+                        {
+                            int tripMaxPassengerSeats = trip.TotalSeats - 1;
+                            int tripBookedSeats = trip.Passengers != null && trip.Passengers.Any() 
+                                ? trip.Passengers.Sum(p => p.Seats) 
+                                : 0;
+                            int availableSeats = tripMaxPassengerSeats - tripBookedSeats;
+                            
+                            <div class="trip-item" onclick="showOpenTripDetails(@trip.TripId)" style="cursor: pointer;">
+                                <div class="trip-avatar">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                                <div class="trip-info">
+                                    <div class="trip-name">@(trip.Passengers?.FirstOrDefault()?.Name ?? "Khách hàng")</div>
+                                    <div class="trip-date">@trip.DepartureTime.ToString("ddd, d MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))</div>
+                                    <div class="trip-status">
+                                        <span class="status-badge @(trip.IsFull ? "status-completed" : "status-active")">
+                                            @(trip.IsFull ? "Hoàn thành" : "Đang hoạt động")
+                                        </span>
+                                    </div>
+                                    <div class="trip-seats-available">
+                                        <i class="bi bi-people"></i>
+                                        <span>Số ghế còn trống: <strong>@availableSeats/@tripMaxPassengerSeats</strong></span>
+                                    </div>
+                                    <div class="trip-route">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <span class="route-text">@trip.PickupAddress</span>
+                                    </div>
+                                    <div class="trip-route">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                        <span class="route-text">@trip.DropoffAddress</span>
+                                    </div>
+                                </div>
+                                <div class="trip-actions">
+                                    <i class="bi bi-three-dots"></i>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-trips">Chưa có chuyến nào đang chờ ghép</div>
+                    }
+                </div>
+                <button type="submit" class="btn btn-find-carpool" id="submitBtn">
+                    Tìm xe ghép
+                </button>
+                <div id="matchingProgress" class="matching-progress" style="display: none;">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    <span>Đang ghép chuyến...</span>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Pickup Modal -->
+<div class="modal fade" id="pickupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Điểm đón</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <label class="form-label">Địa chỉ đón *</label>
+                    <input type="text" id="pickupAddressInput" class="form-control" placeholder="Nhập địa chỉ đón (tối thiểu 3 ký tự)..." />
+                    <div id="pickupSuggestions" class="suggestions-list"></div>
+                    <small class="form-text text-muted">Vui lòng chọn từ danh sách gợi ý hoặc click trên bản đồ.</small>
+                    <button type="button" class="btn btn-sm btn-outline-light mt-2" onclick="getCurrentLocation('pickup')">
+                        <i class="bi bi-geo-alt"></i> Lấy vị trí hiện tại
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="confirmPickup()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dropoff Modal -->
+<div class="modal fade" id="dropoffModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Điểm đến</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <label class="form-label">Địa chỉ đến *</label>
+                    <input type="text" id="dropoffAddressInput" class="form-control" placeholder="Nhập địa chỉ đến (tối thiểu 3 ký tự)..." />
+                    <div id="dropoffSuggestions" class="suggestions-list"></div>
+                    <small class="form-text text-muted">Vui lòng chọn từ danh sách gợi ý hoặc click trên bản đồ.</small>
+                    <button type="button" class="btn btn-sm btn-outline-light mt-2" onclick="getCurrentLocation('dropoff')">
+                        <i class="bi bi-geo-alt"></i> Lấy vị trí hiện tại
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="confirmDropoff()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.HasAssignment)
+{
+    <div class="mt-5">
+        <h4 class="mb-4 text-white">Chuyến xe của bạn</h4>
+        @{
+            var tripsToDisplay = Model.AssignedTrips != null && Model.AssignedTrips.Count > 1 
+                ? Model.AssignedTrips 
+                : (Model.AssignedTrip != null ? new List<CarpoolTripInfo> { Model.AssignedTrip } : new List<CarpoolTripInfo>());
+        }
+        
+        <div class="row g-4">
+            @for (int i = 0; i < tripsToDisplay.Count; i++)
+            {
+                var trip = tripsToDisplay[i];
+                int tripMaxPassengerSeats = trip.TotalSeats - 1;
+                int tripBookedSeats = trip.Passengers != null && trip.Passengers.Any() 
+                    ? trip.Passengers.Sum(p => p.Seats) 
+                    : 0;
+                int remainingSeats = tripMaxPassengerSeats - tripBookedSeats;
+                
+                <div class="col-md-6">
+                    <div class="trip-result-card">
+                        <div class="trip-card-header">
+                            <div class="trip-title">
+                                <i class="bi bi-car-front"></i>
+                                <span>Chuyến @(i + 1) - Mã chuyến: #@trip.TripId</span>
+                            </div>
+                            <div class="trip-status-badge">
+                                @if (trip.IsFull)
+                                {
+                                    <span class="badge-status badge-completed">Đã ghép xong</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-active">Đang tìm thêm khách</span>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="trip-card-body">
+                            <div class="trip-date-time">
+                                <i class="bi bi-calendar3"></i>
+                                <span>@trip.DepartureTime.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                            
+                            <div class="trip-seats-info">
+                                <span class="seats-label">Số ghế còn lại:</span>
+                                <span class="seats-value">@remainingSeats</span>
+                            </div>
+                            
+                            <div class="trip-driver-info">
+                                <div class="driver-avatar">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                                <div class="driver-details">
+                                    <div class="driver-name">@trip.DriverName</div>
+                                    <div class="driver-phone">
+                                        <i class="bi bi-telephone"></i>
+                                        <a href="tel:@trip.DriverPhone">@trip.DriverPhone</a>
+                                    </div>
+                                    <div class="driver-license">
+                                        <i class="bi bi-car-front"></i>
+                                        <span>@trip.LicensePlate</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="trip-locations">
+                                <div class="location-item">
+                                    <i class="bi bi-geo-alt-fill location-icon"></i>
+                                    <div class="location-text">
+                                        <div class="location-label">Điểm đón</div>
+                                        <div class="location-address">@trip.PickupAddress</div>
+                                    </div>
+                                </div>
+                                <div class="location-item">
+                                    <i class="bi bi-geo-alt-fill location-icon"></i>
+                                    <div class="location-text">
+                                        <div class="location-label">Điểm đến</div>
+                                        <div class="location-address">@trip.DropoffAddress</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            @if (trip.TripDistance.HasValue)
+                            {
+                                <div class="trip-distance">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span>@trip.TripDistance.Value.ToString("F1") km</span>
+                                </div>
+                            }
+                            
+                            <div class="trip-cost-info">
+                                <div class="cost-item">
+                                    <span class="cost-label">Tổng chi phí:</span>
+                                    <span class="cost-value badge bg-primary">@FormatCurrency(trip.TotalCost)</span>
+                                </div>
+                                <div class="cost-item">
+                                    <span class="cost-label">Chi phí mỗi ghế:</span>
+                                    <span class="cost-value badge bg-info">@FormatCurrency(trip.CostPerSeat)</span>
+                                </div>
+                                @if (trip.CurrentPassengerCost.HasValue)
+                                {
+                                    <div class="cost-item">
+                                        <span class="cost-label">Chi phí bạn phải trả:</span>
+                                        <span class="cost-value badge bg-success">@FormatCurrency(trip.CurrentPassengerCost.Value)</span>
+                                    </div>
+                                }
+                            </div>
+                            
+                            <div class="trip-actions">
+                                <button type="button" class="btn btn-view-details" onclick="showTripDetails(@trip.TripId)">
+                                    Xem chi tiết
+                                </button>
+                                @if (trip.CanCancel && trip.CurrentPassengerId.HasValue)
+                                {
+                                    <form asp-action="Cancel" method="post" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn hủy tham gia chuyến này?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="passengerId" value="@trip.CurrentPassengerId.Value" />
+                                        <button type="submit" class="btn btn-cancel-trip">
+                                            Hủy chuyến
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <!-- Nút demo để test giao diện -->
+                                    <button type="button" class="btn btn-cancel-trip" disabled title="Demo - Chưa có chuyến để hủy">
+                                        Hủy chuyến
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <!-- Modal chi tiết chuyến -->
+    <div class="modal fade" id="tripDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content trip-details-modal">
+                <div class="modal-header trip-modal-header">
+                    <h5 class="modal-title">Chi tiết chuyến</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="tripDetailsContent">
+                    <!-- Nội dung sẽ được load bằng JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTripDetails(tripId) {
+            // Tìm chuyến tương ứng từ server
+            @{
+                var tripsJson = Newtonsoft.Json.JsonConvert.SerializeObject(tripsToDisplay);
+            }
+            var trips = @Html.Raw(tripsJson);
+            var trip = trips.find(function(t) { return t.TripId === tripId; });
+            
+            if (!trip) return;
+            renderTripDetailsModal(trip);
+        }
+
+        function showOpenTripDetails(tripId) {
+            // Tìm chuyến từ OpenTrips
+            @{
+                var openTripsJson = Model.OpenTrips != null ? Newtonsoft.Json.JsonConvert.SerializeObject(Model.OpenTrips) : "[]";
+            }
+            var openTrips = @Html.Raw(openTripsJson);
+            
+            if (!openTrips || openTrips.length === 0) {
+                console.error('Không có dữ liệu OpenTrips');
+                alert('Không tìm thấy thông tin chuyến đi');
+                return;
+            }
+            
+            var trip = openTrips.find(function(t) { return t.TripId === tripId; });
+            
+            if (!trip) {
+                console.error('Không tìm thấy chuyến với ID:', tripId);
+                alert('Không tìm thấy thông tin chuyến đi');
+                return;
+            }
+            
+            renderTripDetailsModal(trip, true);
+        }
+
+        function renderTripDetailsModal(trip, isOpenTrip) {
+            isOpenTrip = isOpenTrip || false;
+            
+            // Kiểm tra dữ liệu trip
+            if (!trip) {
+                console.error('Dữ liệu trip không hợp lệ');
+                alert('Không thể hiển thị thông tin chuyến đi');
+                return;
+            }
+            
+            // Format ngày tháng
+            var departureDate = new Date(trip.DepartureTime);
+            var formattedDate = departureDate.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            var content = '<div class="trip-details-content">';
+            
+            // Header với thông tin tài xế và chi phí
+            content += '<div class="trip-modal-top">';
+            if (trip.DriverPhone) {
+                content += '<div class="trip-driver-phone">';
+                content += '<a href="tel:' + trip.DriverPhone + '" class="phone-link">' + trip.DriverPhone + '</a>';
+                content += '</div>';
+            }
+            content += '<div class="trip-cost-badges">';
+            content += '<div class="badge-cost-wrapper">';
+            content += '<span class="badge-label">Tổng chi phí:</span>';
+            content += '<span class="badge-cost badge-total">' + formatCurrency(trip.TotalCost || 0) + '</span>';
+            content += '</div>';
+            content += '<div class="badge-cost-wrapper">';
+            content += '<span class="badge-label">Số tiền/ghế:</span>';
+            content += '<span class="badge-cost badge-per-seat">' + formatCurrency(trip.CostPerSeat || 0) + '/ghế</span>';
+            content += '</div>';
+            if (trip.CurrentPassengerCost && !isOpenTrip) {
+                content += '<div class="badge-cost-wrapper">';
+                content += '<span class="badge-label">Chi phí bạn phải trả:</span>';
+                content += '<span class="badge-cost badge-your-cost">' + formatCurrency(trip.CurrentPassengerCost) + '</span>';
+                content += '</div>';
+            }
+            content += '</div>';
+            content += '</div>';
+            
+            // Thông tin chuyến
+            content += '<div class="trip-info-section">';
+            content += '<div class="info-row">';
+            content += '<div class="info-label">Điểm đón:</div>';
+            content += '<div class="info-value">' + (trip.PickupAddress || 'N/A') + '</div>';
+            content += '</div>';
+            content += '<div class="info-row">';
+            content += '<div class="info-label">Điểm đến:</div>';
+            content += '<div class="info-value">' + (trip.DropoffAddress || 'N/A') + '</div>';
+            content += '</div>';
+            content += '<div class="info-row">';
+            content += '<div class="info-label">Khởi hành:</div>';
+            content += '<div class="info-value">' + formattedDate + '</div>';
+            content += '</div>';
+            content += '<div class="info-row">';
+            content += '<div class="info-label">Loại xe:</div>';
+            content += '<div class="info-value">' + (trip.VehicleType || 'N/A') + '</div>';
+            content += '</div>';
+            if (trip.DriverName) {
+                content += '<div class="info-row">';
+                content += '<div class="info-label">Tài xế:</div>';
+                content += '<div class="info-value">' + trip.DriverName + '</div>';
+                content += '</div>';
+            }
+            if (trip.LicensePlate) {
+                content += '<div class="info-row">';
+                content += '<div class="info-label">Biển số:</div>';
+                content += '<div class="info-value">' + trip.LicensePlate + '</div>';
+                content += '</div>';
+            }
+            if (trip.TripDistance) {
+                content += '<div class="info-row">';
+                content += '<div class="info-label">Khoảng cách:</div>';
+                content += '<div class="info-value">' + trip.TripDistance.toFixed(1) + ' km</div>';
+                content += '</div>';
+            }
+            content += '</div>';
+            
+            // Bảng danh sách khách
+            if (trip.Passengers && trip.Passengers.length > 0) {
+                content += '<div class="trip-passengers-section">';
+                content += '<h6 class="passengers-title">Danh sách khách đã đăng ký</h6>';
+                content += '<div class="table-responsive">';
+                content += '<table class="table table-striped table-hover passengers-table">';
+                content += '<thead>';
+                content += '<tr>';
+                content += '<th>#</th>';
+                content += '<th>Tên khách</th>';
+                content += '<th>Số ghế đã đặt</th>';
+                content += '<th>Khoảng cách</th>';
+                content += '<th>Chi phí</th>';
+                content += '</tr>';
+                content += '</thead>';
+                content += '<tbody>';
+                trip.Passengers.forEach(function(p, idx) {
+                    var rowClass = (!isOpenTrip && p.PassengerId === trip.CurrentPassengerId) ? 'table-success' : '';
+                    content += '<tr class="' + rowClass + '">';
+                    content += '<td>' + (idx + 1) + '</td>';
+                    content += '<td>' + (p.Name || 'N/A') + '</td>';
+                    content += '<td>' + (p.Seats || 0) + '</td>';
+                    content += '<td><span class="badge bg-info">' + (p.DistanceKm ? p.DistanceKm.toFixed(1) + ' km' : 'Đang tính...') + '</span></td>';
+                    content += '<td><strong>' + formatCurrency(p.Cost || 0) + '</strong></td>';
+                    content += '</tr>';
+                });
+                content += '</tbody>';
+                content += '</table>';
+                content += '</div>';
+                content += '</div>';
+            }
+            
+            content += '</div>';
+            
+            document.getElementById('tripDetailsContent').innerHTML = content;
+            var modal = new bootstrap.Modal(document.getElementById('tripDetailsModal'));
+            modal.show();
+        }
+        
+        function formatCurrency(value) {
+            if (!value) return '0đ';
+            return new Intl.NumberFormat('vi-VN').format(Math.round(value)) + 'đ';
+        }
+    </script>
+}
+
+@functions {
+    private string FormatCurrency(decimal value)
+    {
+        return $"{value:N0}đ";
+    }
+}
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+    var map;
+    var pickupMarker;
+    var dropoffMarker;
+    var routeLine;
+    var geocodeTimeout;
+    var pickupSuggestions = [];
+    var dropoffSuggestions = [];
+
+    // POI Database - Danh sách địa điểm nổi tiếng với tọa độ chính xác
+    const POI_DATABASE = {
+        "hutech": [
+            { name: "Đại học HUTECH - Khu E", address: "Đại học HUTECH, Song Hành, Xa Lộ Hà Nội, Phường Thạnh Mỹ Tây, Thành phố Thủ Đức", lat: 10.8505, lon: 106.7717, keywords: ["hutech", "khu e"], radius: 300 },
+            { name: "Đại học HUTECH - Khu A", address: "Đại học HUTECH, 475A Điện Biên Phủ, Phường 25, Quận Bình Thạnh", lat: 10.8100, lon: 106.7090, keywords: ["hutech", "khu a"], radius: 300 }
+        ],
+        "đà lạt": [
+            { name: "Ga Đà Lạt", address: "Ga Đà Lạt, Quang Trung, Phường 10, Thành phố Đà Lạt", lat: 11.9414, lon: 108.4378, keywords: ["ga đà lạt"], radius: 200 },
+            { name: "Chợ Đà Lạt", address: "Chợ Đà Lạt, Nguyễn Thị Minh Khai, Phường 1, Thành phố Đà Lạt", lat: 11.9419, lon: 108.4389, keywords: ["chợ đà lạt"], radius: 200 }
+        ]
+    };
+    
+    // Tạo mảng phẳng tất cả POI để dễ tìm kiếm
+    const ALL_POIS = [];
+    for (const category in POI_DATABASE) {
+        POI_DATABASE[category].forEach(poi => ALL_POIS.push(poi));
+    }
+    
+    // Tính khoảng cách giữa 2 điểm (Haversine formula) - trả về mét
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371000; // Bán kính Trái Đất (mét)
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Khoảng cách tính bằng mét
+    }
+    
+    // Tìm POI gần nhất từ tọa độ GPS
+    function findNearestPOI(lat, lng) {
+        if (!ALL_POIS || ALL_POIS.length === 0) return null;
+        
+        let nearestPOI = null;
+        let minDistance = Infinity;
+        
+        for (const poi of ALL_POIS) {
+            const distance = calculateDistance(lat, lng, poi.lat, poi.lon);
+            // Nếu POI có radius được định nghĩa, chỉ chấp nhận nếu trong bán kính đó
+            // Nếu không có radius, mặc định 200m (giảm từ 500m để tránh lấy POI quá xa)
+            const maxRadius = poi.radius || 200;
+            
+            if (distance <= maxRadius && distance < minDistance) {
+                minDistance = distance;
+                nearestPOI = {
+                    ...poi,
+                    distance: distance
+                };
+            }
+        }
+        
+        return nearestPOI;
+    }
+
+    function searchPOI(query) {
+        if (!query || query.length < 2) return [];
+        const lowerQuery = query.toLowerCase().trim();
+        const results = [];
+        for (const category in POI_DATABASE) {
+            POI_DATABASE[category].forEach(poi => {
+                if (poi.name.toLowerCase().includes(lowerQuery) || 
+                    poi.address.toLowerCase().includes(lowerQuery) ||
+                    poi.keywords.some(kw => kw.toLowerCase().includes(lowerQuery))) {
+                    results.push({
+                        display_name: poi.name + " - " + poi.address,
+                        lat: poi.lat.toString(),
+                        lon: poi.lon.toString(),
+                        poi: true
+                    });
+                }
+            });
+        }
+        return results;
+    }
+
+    function initMap() {
+        try {
+            // Kiểm tra xem Leaflet đã load chưa
+            if (typeof L === 'undefined') {
+                console.error('Leaflet chưa được load');
+                setTimeout(initMap, 100);
+                return;
+            }
+            
+            // Kiểm tra xem element map có tồn tại không
+            var mapElement = document.getElementById('map');
+            if (!mapElement) {
+                console.error('Không tìm thấy element map');
+                return;
+            }
+            
+            // Khởi tạo map - mặc định hiển thị ở Đà Lạt
+            map = L.map('map', {
+                center: [11.9404, 108.4583], // Tọa độ Đà Lạt
+                zoom: 13
+            });
+            
+            // Thêm tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Đảm bảo map được render đúng và luôn ở Đà Lạt khi khởi tạo
+            setTimeout(function() {
+                map.invalidateSize();
+                // Đảm bảo map ở Đà Lạt nếu chưa có marker
+                if (!pickupMarker && !dropoffMarker) {
+                    map.setView([11.9404, 108.4583], 13);
+                }
+            }, 100);
+
+            map.on('click', function(e) {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+                if (pickupMarker && dropoffMarker) {
+                    var distToPickup = map.distance(e.latlng, pickupMarker.getLatLng());
+                    var distToDropoff = map.distance(e.latlng, dropoffMarker.getLatLng());
+                    var type = distToPickup < distToDropoff ? 'pickup' : 'dropoff';
+                    reverseGeocode(lat, lng, type);
+                } else if (!pickupMarker) {
+                    reverseGeocode(lat, lng, 'pickup');
+                } else {
+                    reverseGeocode(lat, lng, 'dropoff');
+                }
+            });
+        } catch (error) {
+            console.error('Lỗi khi khởi tạo bản đồ:', error);
+        }
+    }
+
+    function showPickupModal() {
+        var modal = new bootstrap.Modal(document.getElementById('pickupModal'));
+        modal.show();
+        $('#pickupAddressInput').on('input', function() {
+            clearTimeout(geocodeTimeout);
+            var address = $(this).val();
+            if (address.length > 3) {
+                geocodeTimeout = setTimeout(() => geocodeWithSuggestions(address, 'pickup'), 500);
+            } else {
+                hideSuggestions('pickup');
+            }
+        });
+    }
+
+    function showDropoffModal() {
+        var modal = new bootstrap.Modal(document.getElementById('dropoffModal'));
+        modal.show();
+        $('#dropoffAddressInput').on('input', function() {
+            clearTimeout(geocodeTimeout);
+            var address = $(this).val();
+            if (address.length > 3) {
+                geocodeTimeout = setTimeout(() => geocodeWithSuggestions(address, 'dropoff'), 500);
+            } else {
+                hideSuggestions('dropoff');
+            }
+        });
+    }
+
+    function confirmPickup() {
+        var address = $('#pickupAddressInput').val();
+        if (address) {
+            $('#pickupAddress').val(address);
+            $('#pickupAddressDisplay').val(address);
+            var modal = bootstrap.Modal.getInstance(document.getElementById('pickupModal'));
+            modal.hide();
+        }
+    }
+
+    function confirmDropoff() {
+        var address = $('#dropoffAddressInput').val();
+        if (address) {
+            $('#dropoffAddress').val(address);
+            $('#dropoffAddressDisplay').val(address);
+            var modal = bootstrap.Modal.getInstance(document.getElementById('dropoffModal'));
+            modal.hide();
+        }
+    }
+
+    async function geocodeWithSuggestions(address, type) {
+        var poiResults = searchPOI(address);
+        var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=10&countrycodes=vn&addressdetails=1&accept-language=vi`;
+        var allSuggestions = [];
+        
+        if (poiResults.length > 0) {
+            allSuggestions = allSuggestions.concat(poiResults);
+        }
+        
+        try {
+            var response = await fetch(url, {
+                headers: { 'User-Agent': 'nhom8dalat-app' }
+            });
+            var nominatimData = await response.json();
+            if (nominatimData && nominatimData.length > 0) {
+                nominatimData.forEach(item => {
+                    var isDuplicate = poiResults.some(poi => 
+                        Math.abs(parseFloat(poi.lat) - parseFloat(item.lat)) < 0.001 &&
+                        Math.abs(parseFloat(poi.lon) - parseFloat(item.lon)) < 0.001
+                    );
+                    if (!isDuplicate) allSuggestions.push(item);
+                });
+            }
+            allSuggestions = allSuggestions.slice(0, 10);
+            if (allSuggestions.length > 0) {
+                if (type === 'pickup') {
+                    pickupSuggestions = allSuggestions;
+                    showSuggestions(allSuggestions, 'pickup');
+                } else {
+                    dropoffSuggestions = allSuggestions;
+                    showSuggestions(allSuggestions, 'dropoff');
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi geocoding:', error);
+        }
+    }
+
+    function showSuggestions(suggestions, type) {
+        var containerId = type === 'pickup' ? '#pickupSuggestions' : '#dropoffSuggestions';
+        var container = $(containerId);
+        container.empty();
+        suggestions.forEach(item => {
+            var itemDiv = $('<div class="suggestion-item"></div>');
+            if (item.poi) itemDiv.append($('<span class="badge bg-success me-2">POI</span>'));
+            itemDiv.append($('<span></span>').text(item.display_name))
+                .on('click', () => selectSuggestion(item, type));
+            container.append(itemDiv);
+        });
+        container.show();
+    }
+
+    function hideSuggestions(type) {
+        var containerId = type === 'pickup' ? '#pickupSuggestions' : '#dropoffSuggestions';
+        $(containerId).hide();
+    }
+
+    function selectSuggestion(item, type) {
+        var lat = parseFloat(item.lat);
+        var lng = parseFloat(item.lon);
+        var address = item.display_name;
+        var inputId = type === 'pickup' ? '#pickupAddressInput' : '#dropoffAddressInput';
+        var displayId = type === 'pickup' ? '#pickupAddressDisplay' : '#dropoffAddressDisplay';
+        var hiddenId = type === 'pickup' ? '#pickupAddress' : '#dropoffAddress';
+        var latId = type === 'pickup' ? '#pickupLat' : '#dropoffLat';
+        var lngId = type === 'pickup' ? '#pickupLng' : '#dropoffLng';
+        
+        $(inputId).val(address);
+        $(displayId).val(address);
+        $(hiddenId).val(address);
+        $(latId).val(lat);
+        $(lngId).val(lng);
+        updateMarker(lat, lng, type);
+        hideSuggestions(type);
+        updateRoute();
+    }
+
+    function reverseGeocode(lat, lng, type, callback) {
+        callback = callback || function() {}; // Callback mặc định
+        ensureMapInitialized(); // Đảm bảo map đã khởi tạo
+        
+        // Sử dụng reverse geocoding trực tiếp với tọa độ GPS gốc (không dùng POI để đảm bảo độ chính xác)
+        console.log('Sử dụng reverse geocoding với tọa độ GPS:', lat, lng);
+        // Tăng zoom level và thêm countrycodes để tăng độ chính xác
+        var url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=vi&zoom=18&countrycodes=vn`;
+        
+        fetch(url, { headers: { 'User-Agent': 'nhom8dalat-app' } })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.display_name) {
+                    var address = data.display_name;
+                    
+                    // Cập nhật cả input trong modal và display field
+                    var inputId = type === 'pickup' ? '#pickupAddressInput' : '#dropoffAddressInput';
+                    var displayId = type === 'pickup' ? '#pickupAddressDisplay' : '#dropoffAddressDisplay';
+                    var hiddenId = type === 'pickup' ? '#pickupAddress' : '#dropoffAddress';
+                    var latId = type === 'pickup' ? '#pickupLat' : '#dropoffLat';
+                    var lngId = type === 'pickup' ? '#pickupLng' : '#dropoffLng';
+                    
+                    $(inputId).val(address);
+                    $(displayId).val(address);
+                    $(hiddenId).val(address);
+                    $(latId).val(lat);
+                    $(lngId).val(lng);
+                    updateMarker(lat, lng, type);
+                    updateRoute();
+                    callback(true); // Thành công
+                } else {
+                    console.error('Không nhận được dữ liệu từ reverse geocoding:', data);
+                    alert('Không thể xác định địa chỉ từ vị trí GPS. Vui lòng chọn địa chỉ thủ công.');
+                    callback(false); // Thất bại
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi reverse geocoding:', error);
+                alert('Không thể lấy địa chỉ từ vị trí GPS. Vui lòng chọn địa chỉ thủ công.');
+                callback(false); // Thất bại
+            });
+    }
+
+    // Kiểm tra tọa độ có hợp lệ không (trong phạm vi Việt Nam)
+    function isValidCoordinate(lat, lng) {
+        // Việt Nam: lat từ 8.5 đến 23.5, lng từ 102 đến 110
+        return lat >= 8.5 && lat <= 23.5 && lng >= 102 && lng <= 110;
+    }
+
+    function updateMarker(lat, lng, type) {
+        // Kiểm tra tọa độ hợp lệ trước khi tạo marker
+        if (!isValidCoordinate(lat, lng)) {
+            console.warn('Tọa độ không hợp lệ:', lat, lng);
+            // Nếu tọa độ không hợp lệ, đảm bảo map ở Đà Lạt
+            if (map) {
+                map.setView([11.9404, 108.4583], 13);
+            }
+            return;
+        }
+
+        var icon = L.icon({
+            iconUrl: type === 'pickup' 
+                ? 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png'
+                : 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41]
+        });
+
+        if (type === 'pickup') {
+            if (pickupMarker) map.removeLayer(pickupMarker);
+            pickupMarker = L.marker([lat, lng], { icon: icon, draggable: true }).addTo(map).bindPopup('Điểm đón (kéo để điều chỉnh)');
+            // Cho phép kéo marker để điều chỉnh vị trí
+            pickupMarker.on('dragend', function(e) {
+                var newLat = e.target.getLatLng().lat;
+                var newLng = e.target.getLatLng().lng;
+                $('#pickupLat').val(newLat);
+                $('#pickupLng').val(newLng);
+                reverseGeocode(newLat, newLng, 'pickup');
+                updateRoute();
+            });
+        } else {
+            if (dropoffMarker) map.removeLayer(dropoffMarker);
+            dropoffMarker = L.marker([lat, lng], { icon: icon, draggable: true }).addTo(map).bindPopup('Điểm đến (kéo để điều chỉnh)');
+            // Cho phép kéo marker để điều chỉnh vị trí
+            dropoffMarker.on('dragend', function(e) {
+                var newLat = e.target.getLatLng().lat;
+                var newLng = e.target.getLatLng().lng;
+                $('#dropoffLat').val(newLat);
+                $('#dropoffLng').val(newLng);
+                reverseGeocode(newLat, newLng, 'dropoff');
+                updateRoute();
+            });
+        }
+
+        if (pickupMarker && dropoffMarker) {
+            var bounds = L.latLngBounds([
+                [pickupMarker.getLatLng().lat, pickupMarker.getLatLng().lng],
+                [dropoffMarker.getLatLng().lat, dropoffMarker.getLatLng().lng]
+            ]);
+            map.fitBounds(bounds, { padding: [50, 50] });
+        } else if (pickupMarker || dropoffMarker) {
+            // Nếu chỉ có 1 marker, giữ map ở Đà Lạt nhưng hiển thị marker
+            var marker = pickupMarker || dropoffMarker;
+            map.setView(marker.getLatLng(), 13);
+        } else {
+            // Nếu chưa có marker nào, đảm bảo map ở Đà Lạt
+            map.setView([11.9404, 108.4583], 13);
+        }
+    }
+
+    function updateRoute() {
+        ensureMapInitialized(); // Đảm bảo map đã khởi tạo
+        if (!pickupMarker || !dropoffMarker) {
+            if (routeLine) {
+                map.removeLayer(routeLine);
+                routeLine = null;
+            }
+            // Xóa tất cả distance label cũ nếu có
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker && 
+                    layer.options && 
+                    layer.options.icon && 
+                    layer.options.icon.options && 
+                    layer.options.icon.options.className === 'distance-label') {
+                    map.removeLayer(layer);
+                }
+            });
+            $('#distanceValue').text('0');
+            
+            // Nếu không có marker nào, đảm bảo map ở Đà Lạt
+            if (!pickupMarker && !dropoffMarker && map) {
+                map.setView([11.9404, 108.4583], 13);
+            }
+            return;
+        }
+
+        if (routeLine) map.removeLayer(routeLine);
+
+        var pickup = pickupMarker.getLatLng();
+        var dropoff = dropoffMarker.getLatLng();
+        var osrmUrl = `https://router.project-osrm.org/route/v1/driving/${pickup.lng},${pickup.lat};${dropoff.lng},${dropoff.lat}?overview=full&geometries=geojson`;
+
+        fetch(osrmUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.routes && data.routes.length > 0) {
+            // Xóa tất cả distance label cũ nếu có
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker && 
+                    layer.options && 
+                    layer.options.icon && 
+                    layer.options.icon.options && 
+                    layer.options.icon.options.className === 'distance-label') {
+                    map.removeLayer(layer);
+                }
+            });
+                    
+                    var geometry = data.routes[0].geometry;
+                    var coordinates = geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    var distance = (data.routes[0].distance / 1000).toFixed(1);
+                    
+                    routeLine = L.polyline(coordinates, { 
+                        color: '#007bff', 
+                        weight: 5,
+                        opacity: 0.7
+                    }).addTo(map);
+                    
+                    // Hiển thị km trên đường đi - giống carpool apps
+                    // Hiển thị ở nhiều điểm dọc đường để dễ nhìn
+                    var labelPositions = [
+                        Math.floor(coordinates.length * 0.25),  // 25% đường đi
+                        Math.floor(coordinates.length * 0.5),   // 50% đường đi (giữa)
+                        Math.floor(coordinates.length * 0.75)   // 75% đường đi
+                    ];
+                    
+                    labelPositions.forEach(function(index) {
+                        if (index >= 0 && index < coordinates.length) {
+                            var labelPoint = coordinates[index];
+                            var distanceLabel = L.marker(labelPoint, {
+                                icon: L.divIcon({
+                                    className: 'distance-label',
+                                    html: `<div class="distance-label-content">
+                                        <span class="distance-value">${distance}</span>
+                                        <span class="distance-unit">km</span>
+                                    </div>`,
+                                    iconSize: [100, 40],
+                                    iconAnchor: [50, 20]
+                                }),
+                                interactive: false,
+                                zIndexOffset: 1000
+                            }).addTo(map);
+                        }
+                    });
+                    
+                    // Cập nhật stats bar
+                    $('#distanceValue').text(distance);
+                    
+                    var bounds = L.latLngBounds([pickup, dropoff]);
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            })
+            .catch(error => console.error('Lỗi khi vẽ đường đi:', error));
+    }
+
+    // Biến để tránh multiple calls đồng thời
+    var isGettingLocation = false;
+    
+    function getCurrentLocation(type) {
+        // Ngăn multiple calls
+        if (isGettingLocation) {
+            console.log('Đang xử lý yêu cầu lấy vị trí trước đó...');
+            return;
+        }
+        
+        ensureMapInitialized(); // Đảm bảo map đã khởi tạo
+        
+        if (!navigator.geolocation) {
+            alert('Trình duyệt không hỗ trợ lấy vị trí. Vui lòng sử dụng trình duyệt hiện đại hơn.');
+            return;
+        }
+        
+        // Đánh dấu đang xử lý
+        isGettingLocation = true;
+        
+        // Hiển thị loading state
+        var buttonId = type === 'pickup' ? '#pickupModal .btn-outline-light' : '#dropoffModal .btn-outline-light';
+        var originalText = $(buttonId).html();
+        $(buttonId).prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Đang lấy vị trí...');
+        
+        var loadingMsg = type === 'pickup' ? 'Đang lấy vị trí điểm đón...' : 'Đang lấy vị trí điểm đến...';
+        console.log(loadingMsg);
+        
+        // Cấu hình options cho geolocation
+        var options = {
+            enableHighAccuracy: true, // Sử dụng GPS nếu có
+            timeout: 15000, // Timeout sau 15 giây (tăng lên để đợi GPS)
+            maximumAge: 0 // Không sử dụng cache, luôn lấy vị trí mới
+        };
+        
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                // Thành công
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                var accuracy = position.coords.accuracy; // Độ chính xác tính bằng mét
+                console.log('Đã lấy được vị trí GPS:', lat, lng, 'Độ chính xác:', accuracy, 'm');
+                
+                // Cảnh báo nếu độ chính xác quá kém (lớn hơn 100m)
+                if (accuracy > 100) {
+                    console.warn('Độ chính xác GPS thấp:', accuracy, 'm. Vị trí có thể bị lệch.');
+                }
+                
+                // Kiểm tra tọa độ hợp lệ
+                if (!isValidCoordinate(lat, lng)) {
+                    isGettingLocation = false;
+                    $(buttonId).prop('disabled', false).html(originalText);
+                    alert('Vị trí hiện tại không nằm trong phạm vi Việt Nam. Vui lòng chọn địa chỉ thủ công.');
+                    return;
+                }
+                
+                // Gọi reverseGeocode với callback để reset state
+                reverseGeocode(lat, lng, type, function(success) {
+                    isGettingLocation = false;
+                    $(buttonId).prop('disabled', false).html(originalText);
+                    if (success) {
+                        // Đóng modal sau khi lấy được vị trí
+                        var modalId = type === 'pickup' ? '#pickupModal' : '#dropoffModal';
+                        var modal = bootstrap.Modal.getInstance($(modalId)[0]);
+                        if (modal) {
+                            setTimeout(function() {
+                                modal.hide();
+                            }, 500);
+                        }
+                    }
+                });
+            },
+            function(error) {
+                // Xử lý lỗi
+                isGettingLocation = false;
+                $(buttonId).prop('disabled', false).html(originalText);
+                
+                var errorMsg = 'Không thể lấy vị trí hiện tại. ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMsg += 'Bạn đã từ chối quyền truy cập vị trí. Vui lòng cấp quyền trong cài đặt trình duyệt.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMsg += 'Vị trí không khả dụng. Vui lòng kiểm tra GPS hoặc kết nối mạng.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMsg += 'Hết thời gian chờ. Vui lòng thử lại hoặc chọn địa chỉ thủ công.';
+                        break;
+                    default:
+                        errorMsg += 'Lỗi không xác định. Vui lòng thử lại.';
+                        break;
+                }
+                alert(errorMsg);
+                console.error('Lỗi geolocation:', error);
+            },
+            options
+        );
+    }
+
+    $('#NumberOfPassengers').on('change', function() {
+        $('#passengerCount').text($(this).val());
+    });
+
+    // Xóa tất cả marker không hợp lệ
+    function clearInvalidMarkers() {
+        if (!map) return;
+        
+        // Xóa pickup marker nếu tọa độ không hợp lệ
+        var pickupLat = parseFloat($('#pickupLat').val());
+        var pickupLng = parseFloat($('#pickupLng').val());
+        if (pickupMarker && (!pickupLat || !pickupLng || isNaN(pickupLat) || isNaN(pickupLng) || !isValidCoordinate(pickupLat, pickupLng))) {
+            map.removeLayer(pickupMarker);
+            pickupMarker = null;
+            $('#pickupLat').val('');
+            $('#pickupLng').val('');
+            $('#pickupAddress').val('');
+            $('#pickupAddressDisplay').val('');
+        }
+        
+        // Xóa dropoff marker nếu tọa độ không hợp lệ
+        var dropoffLat = parseFloat($('#dropoffLat').val());
+        var dropoffLng = parseFloat($('#dropoffLng').val());
+        if (dropoffMarker && (!dropoffLat || !dropoffLng || isNaN(dropoffLat) || isNaN(dropoffLng) || !isValidCoordinate(dropoffLat, dropoffLng))) {
+            map.removeLayer(dropoffMarker);
+            dropoffMarker = null;
+            $('#dropoffLat').val('');
+            $('#dropoffLng').val('');
+            $('#dropoffAddress').val('');
+            $('#dropoffAddressDisplay').val('');
+        }
+        
+        // Đảm bảo map ở Đà Lạt nếu không có marker hợp lệ
+        if (!pickupMarker && !dropoffMarker) {
+            map.setView([11.9404, 108.4583], 13);
+        }
+    }
+
+    // Tối ưu: Chỉ khởi tạo map khi cần thiết (lazy load)
+    var mapInitialized = false;
+    
+    function ensureMapInitialized() {
+        if (mapInitialized || map) return;
+        
+        if (typeof L !== 'undefined') {
+            initMap();
+            mapInitialized = true;
+            setTimeout(clearInvalidMarkers, 500);
+        } else {
+            // Nếu Leaflet chưa load, đợi một chút
+            setTimeout(function() {
+                if (typeof L !== 'undefined') {
+                    initMap();
+                    mapInitialized = true;
+                    setTimeout(clearInvalidMarkers, 500);
+                } else {
+                    console.error('Không thể load Leaflet');
+                }
+            }, 100);
+        }
+    }
+
+    // Đảm bảo map được khởi tạo sau khi DOM sẵn sàng (nhưng defer)
+    $(document).ready(function() {
+        // Defer map initialization để tăng tốc độ load trang
+        setTimeout(function() {
+            ensureMapInitialized();
+        }, 300);
+        
+        // Khởi tạo map ngay khi user tương tác với map area
+        $('#map, .carpool-map').on('mouseenter click', function() {
+            ensureMapInitialized();
+        });
+    });
+
+    $('#carpoolForm').on('submit', function(e) {
+        var submitBtn = $('#submitBtn');
+        var progressDiv = $('#matchingProgress');
+        
+        // Disable button và hiển thị progress ngay lập tức
+        submitBtn.prop('disabled', true);
+        progressDiv.show();
+        
+        // Cho phép form submit bình thường - để server-side validation xử lý
+        // Không chặn form submit ở client-side
+        return true;
+    });
+
+    // Khởi tạo giá trị hiển thị sau khi map đã sẵn sàng
+    function initializeDisplayValues() {
+        ensureMapInitialized();
+        if (!map) {
+            setTimeout(initializeDisplayValues, 200);
+            return;
+        }
+        
+        // Hiển thị giá trị đã có nếu có
+        var pickupAddr = $('#pickupAddress').val();
+        if (pickupAddr) {
+            $('#pickupAddressDisplay').val(pickupAddr);
+        }
+        
+        var dropoffAddr = $('#dropoffAddress').val();
+        if (dropoffAddr) {
+            $('#dropoffAddressDisplay').val(dropoffAddr);
+        }
+        
+        // Nếu có tọa độ hợp lệ, hiển thị marker
+        var pickupLat = parseFloat($('#pickupLat').val());
+        var pickupLng = parseFloat($('#pickupLng').val());
+        if (pickupLat && pickupLng && !isNaN(pickupLat) && !isNaN(pickupLng) && isValidCoordinate(pickupLat, pickupLng)) {
+            updateMarker(pickupLat, pickupLng, 'pickup');
+        } else {
+            // Xóa giá trị không hợp lệ
+            $('#pickupLat').val('');
+            $('#pickupLng').val('');
+            $('#pickupAddress').val('');
+            $('#pickupAddressDisplay').val('');
+        }
+        
+        var dropoffLat = parseFloat($('#dropoffLat').val());
+        var dropoffLng = parseFloat($('#dropoffLng').val());
+        if (dropoffLat && dropoffLng && !isNaN(dropoffLat) && !isNaN(dropoffLng) && isValidCoordinate(dropoffLat, dropoffLng)) {
+            updateMarker(dropoffLat, dropoffLng, 'dropoff');
+        } else {
+            // Xóa giá trị không hợp lệ
+            $('#dropoffLat').val('');
+            $('#dropoffLng').val('');
+            $('#dropoffAddress').val('');
+            $('#dropoffAddressDisplay').val('');
+        }
+        
+        // Cập nhật route nếu có cả 2 điểm hợp lệ
+        if (pickupMarker && dropoffMarker) {
+            setTimeout(function() {
+                updateRoute();
+            }, 500);
+        } else {
+            // Đảm bảo map ở Đà Lạt nếu không có marker hợp lệ
+            map.setView([11.9404, 108.4583], 13);
+        }
+    }
+    
+    // Gọi sau khi map đã khởi tạo
+    setTimeout(function() {
+        initializeDisplayValues();
+    }, 1000);
+</script>
+
+<style>
+    .alert {
+        margin-top: 100px;
+        margin-bottom: 1rem;
+        margin-left: 1rem;
+        margin-right: 1rem;
+        z-index: 1000;
+        position: relative;
+    }
+
+    .carpool-container {
+        padding: 0;
+        padding-top: 100px;
+        margin: 0;
+        max-width: 100vw;
+        width: 100vw;
+        overflow-x: hidden;
+    }
+
+    .carpool-layout {
+        display: grid;
+        grid-template-columns: 450px 1fr 450px;
+        gap: 1.5rem;
+        height: calc(100vh - 200px);
+        min-height: 600px;
+        padding: 0 40px;
+        max-width: 100%;
+    }
+
+    .carpool-left-panel {
+        background: #1e1e1e;
+        border-radius: 12px;
+        padding: 1.5rem;
+        overflow-y: auto;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .carpool-section {
+        margin-bottom: 2rem;
+    }
+
+    .carpool-section-title {
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .customer-avatar-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .customer-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #2a2a2a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .customer-avatar i {
+        font-size: 60px;
+        color: #666;
+    }
+
+    .avatar-badge {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 28px;
+        height: 28px;
+        background: #007bff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #1a1a1a;
+    }
+
+    .avatar-badge i {
+        font-size: 16px;
+        color: #fff;
+    }
+
+    .customer-form-fields,
+    .trip-form-fields {
+        width: 100%;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        color: #ccc;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control,
+    .form-select {
+        background: #2a2a2a;
+        border: 1px solid #444;
+        color: #fff;
+        border-radius: 6px;
+        padding: 0.5rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background: #2a2a2a;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-control::placeholder {
+        color: #666;
+    }
+
+    .btn-pickup-point {
+        width: 100%;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-weight: 500;
+        margin-top: 1rem;
+    }
+
+    .btn-pickup-point:hover {
+        background: #0056b3;
+        color: #fff;
+    }
+
+    .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .carpool-center-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .trip-stats-bar {
+        display: flex;
+        gap: 1rem;
+        background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .trip-stat-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .trip-stat-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(0, 123, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+    }
+
+    .trip-stat-item i {
+        color: #007bff;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex: 1;
+    }
+
+    .stat-label {
+        color: #999;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        color: #fff;
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: baseline;
+        gap: 0.25rem;
+    }
+
+    .stat-unit {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #007bff;
+        opacity: 0.9;
+    }
+
+    .distance-stat .stat-value {
+        color: #007bff;
+    }
+
+    .passenger-stat .stat-value {
+        color: #28a745;
+    }
+
+    .passenger-stat i {
+        color: #28a745;
+    }
+
+    .form-control[readonly] {
+        background: #2a2a2a;
+        color: #ccc;
+        cursor: default;
+    }
+
+    /* Tăng độ rộng ô input điểm đón/điểm đến */
+    #pickupAddressDisplay,
+    #dropoffAddressDisplay {
+        width: 100%;
+        min-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* CSS cho giao diện kết quả mới */
+    .trip-result-card {
+        background: #1e1e1e;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .trip-card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .trip-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .trip-title i {
+        font-size: 1.3rem;
+    }
+
+    .badge-status {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .badge-completed {
+        background: #28a745;
+        color: #fff;
+    }
+
+    .badge-active {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .trip-card-body {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .trip-date-time {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #ccc;
+        font-size: 0.9rem;
+    }
+
+    .trip-seats-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: #2a2a2a;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .seats-label {
+        color: #ccc;
+        font-size: 0.9rem;
+    }
+
+    .seats-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #fff;
+    }
+
+    .trip-driver-info {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: #2a2a2a;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .driver-avatar {
+        flex-shrink: 0;
+    }
+
+    .driver-avatar i {
+        font-size: 3rem;
+        color: #ccc;
+    }
+
+    .driver-details {
+        flex: 1;
+    }
+
+    .driver-name {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #fff;
+        margin-bottom: 0.5rem;
+    }
+
+    .driver-phone,
+    .driver-license {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #ccc;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .driver-phone a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .driver-phone a:hover {
+        text-decoration: underline;
+    }
+
+    .trip-locations {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .location-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: #2a2a2a;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .location-icon {
+        flex-shrink: 0;
+        font-size: 1.5rem;
+        color: #007bff;
+        margin-top: 0.25rem;
+    }
+
+    .location-text {
+        flex: 1;
+    }
+
+    .location-label {
+        font-size: 0.85rem;
+        color: #ccc;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+    }
+
+    .location-address {
+        font-size: 0.95rem;
+        color: #fff;
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+
+    .trip-distance {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: rgba(0, 123, 255, 0.1);
+        border-radius: 8px;
+        color: #007bff;
+        font-weight: 500;
+        border: 1px solid rgba(0, 123, 255, 0.2);
+    }
+
+    .trip-cost-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: #2a2a2a;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cost-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .cost-label {
+        font-size: 0.9rem;
+        color: #ccc;
+        font-weight: 500;
+    }
+
+    .cost-value {
+        font-size: 0.95rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .trip-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: auto;
+        padding-top: 1rem;
+    }
+
+    .btn-view-details {
+        flex: 1;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-view-details:hover {
+        background: #0056b3;
+        color: #fff;
+    }
+
+    .btn-cancel-trip {
+        flex: 1;
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel-trip:hover {
+        background: #c82333;
+        color: #fff;
+    }
+
+    .btn-cancel-trip:disabled {
+        background: #6c757d;
+        color: #fff;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .carpool-map {
+        flex: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #2a2a2a;
+        position: relative;
+        min-height: 400px;
+        height: 100%;
+    }
+    
+    #map {
+        width: 100%;
+        height: 100%;
+        min-height: 400px;
+    }
+
+
+    .distance-label {
+        background: transparent !important;
+        border: none !important;
+    }
+
+    .distance-label-content {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: #fff;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        backdrop-filter: blur(10px);
+        animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .distance-value {
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .distance-unit {
+        font-size: 0.75rem;
+        font-weight: 600;
+        opacity: 0.9;
+        text-transform: uppercase;
+    }
+
+    @@keyframes pulse-glow {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        50% {
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.7), 0 3px 6px rgba(0, 0, 0, 0.4);
+        }
+    }
+
+    .carpool-right-panel {
+        background: #1e1e1e;
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .trips-sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .trips-title {
+        color: #fff;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .trips-sidebar-header i {
+        color: #666;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+
+    .trips-list {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+    }
+
+    .trip-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: #2a2a2a;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .trip-item:hover {
+        background: #333;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .trip-avatar {
+        flex-shrink: 0;
+    }
+
+    .trip-avatar i {
+        font-size: 40px;
+        color: #666;
+    }
+
+    .trip-info {
+        flex: 1;
+    }
+
+    .trip-name {
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .trip-date {
+        color: #999;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .trip-status {
+        margin-bottom: 0.5rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-active {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .status-completed {
+        background: #28a745;
+        color: #fff;
+    }
+
+    .trip-seats-available {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #fff;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .trip-seats-available i {
+        color: #007bff;
+    }
+
+    .trip-seats-available strong {
+        color: #ffc107;
+        font-size: 1rem;
+    }
+
+    .trip-route {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        color: #ccc;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .trip-route i {
+        flex-shrink: 0;
+        margin-top: 0.2rem;
+        color: #007bff;
+    }
+
+    .route-text {
+        flex: 1;
+        word-wrap: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .trip-actions {
+        color: #666;
+        cursor: pointer;
+    }
+
+    .no-trips {
+        color: #666;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .btn-find-carpool {
+        width: 100%;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .btn-find-carpool:hover {
+        background: #0056b3;
+        color: #fff;
+    }
+
+    .matching-progress {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        margin-top: 1rem;
+    }
+
+    .suggestions-list {
+        position: absolute;
+        z-index: 9999;
+        background: #2a2a2a;
+        color: #fff;
+        border: 1px solid #444;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        width: 100%;
+        margin-top: 2px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        display: none;
+    }
+
+    .suggestion-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #444;
+    }
+
+    .suggestion-item:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .form-group {
+        position: relative;
+    }
+
+    @@media (max-width: 1600px) {
+        .carpool-layout {
+            grid-template-columns: 420px 1fr 420px;
+            gap: 1.25rem;
+            padding: 0 30px;
+        }
+    }
+
+    @@media (max-width: 1400px) {
+        .carpool-layout {
+            grid-template-columns: 380px 1fr 380px;
+            gap: 1rem;
+            padding: 0 20px;
+        }
+    }
+
+    @@media (max-width: 1200px) {
+        .carpool-layout {
+            grid-template-columns: 350px 1fr 350px;
+            gap: 0.75rem;
+            padding: 0 15px;
+        }
+    }
+
+    @@media (max-width: 1000px) {
+        .carpool-layout {
+            grid-template-columns: 1fr;
+            height: auto;
+            gap: 1rem;
+            padding: 0 10px;
+        }
+
+        .carpool-left-panel,
+        .carpool-right-panel {
+            max-height: 400px;
+        }
+    }
+
+    /* CSS cho Modal chi tiết chuyến */
+    .trip-details-modal .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        background: #1e1e1e;
+        color: #fff;
+    }
+
+    .trip-modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        padding: 1.5rem;
+    }
+
+    .trip-modal-header .modal-title {
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+
+    .trip-modal-header .btn-close-white {
+        filter: invert(1);
+    }
+
+    .trip-details-content {
+        padding: 0;
+    }
+
+    .trip-modal-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        background: #2a2a2a;
+        border-bottom: 1px solid #444;
+    }
+
+    .trip-driver-phone {
+        flex: 1;
+    }
+
+    .phone-link {
+        color: #007bff;
+        text-decoration: underline;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .phone-link:hover {
+        color: #0056b3;
+    }
+
+    .trip-cost-badges {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .badge-cost-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: flex-end;
+    }
+
+    .badge-label {
+        font-size: 0.75rem;
+        color: #ccc;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .badge-cost {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .badge-total {
+        background: #007bff;
+        color: #fff;
+    }
+
+    .badge-per-seat {
+        background: #17a2b8;
+        color: #fff;
+    }
+
+    .badge-your-cost {
+        background: #28a745;
+        color: #fff;
+    }
+
+    .trip-info-section {
+        padding: 1.5rem;
+        background: #1e1e1e;
+    }
+
+    .info-row {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #444;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #ccc;
+        width: 150px;
+        flex-shrink: 0;
+    }
+
+    .info-value {
+        color: #fff;
+        flex: 1;
+    }
+
+    .trip-passengers-section {
+        padding: 1.5rem;
+        background: #2a2a2a;
+        border-top: 1px solid #444;
+    }
+
+    .passengers-title {
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .passengers-table {
+        background: #1e1e1e;
+        border-radius: 8px;
+        overflow: hidden;
+        color: #fff;
+    }
+
+    .passengers-table thead {
+        background: #333;
+    }
+
+    .passengers-table thead th {
+        font-weight: 600;
+        color: #fff;
+        border-bottom: 2px solid #444;
+        padding: 0.75rem;
+    }
+
+    .passengers-table tbody td {
+        padding: 0.75rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #444;
+    }
+
+    .passengers-table tbody tr:hover {
+        background-color: #2a2a2a;
+    }
+
+    .passengers-table .table-success {
+        background-color: rgba(40, 167, 69, 0.2);
+    }
+
+    /* CSS riêng cho navbar trên trang carpool */
+    .navbar-custom {
+        background: rgba(0, 0, 0, 0.8) !important;
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Override Bootstrap container for carpool page */
+    .container {
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+    }
+
+    main {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .navbar-custom .nav-link {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        margin: 0 2px !important;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .navbar-custom .nav-link:hover {
+        background-color: rgba(255, 215, 0, 0.2) !important;
+        border-color: rgba(255, 215, 0, 0.4) !important;
+        color: #ffd700 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3) !important;
+    }
+
+    .navbar-custom .navbar-brand {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+        background: linear-gradient(45deg, #ffd700, #ffed4e) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        font-weight: 700 !important;
+    }
+
+    .navbar-custom .dropdown-menu {
+        background-color: rgba(0, 0, 0, 0.95) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+    }
+</style>

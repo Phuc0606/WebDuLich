@@ -1,0 +1,1737 @@
+@model WebDuLichDaLat.Models.TripPlannerViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using WebDuLichDaLat.Models
+@{
+    ViewData["Title"] = "AI Planner - Lập kế hoạch du lịch thông minh";
+
+    Layout = "~/Views/Shared/_LayoutNoFooter.cshtml";
+
+
+
+    var touristPlacesJson = ViewBag.TouristPlacesJson as string;
+
+
+
+    ViewBag.HideNavbar = false;
+}
+
+<style>
+    /* CSS riêng cho navbar trên trang TripPlanner */
+    .navbar-custom {
+        background: rgba(0, 0, 0, 0.8) !important;
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .navbar-custom .nav-link {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        margin: 0 2px !important;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .navbar-custom .nav-link:hover {
+        background-color: rgba(255, 215, 0, 0.2) !important;
+        border-color: rgba(255, 215, 0, 0.4) !important;
+        color: #ffd700 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3) !important;
+    }
+
+    .navbar-custom .navbar-brand {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+        background: linear-gradient(45deg, #ffd700, #ffed4e) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        font-weight: 700 !important;
+    }
+
+    .navbar-custom .dropdown-menu {
+        background-color: rgba(0, 0, 0, 0.95) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    body {
+        background: #0a0a0f;
+        color: #ffffff;
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    .trip-planner-container {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .map-section {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+
+    .ai-planner-overlay {
+        position: absolute;
+        top: 100px;
+        left: 20px;
+        width: 420px;
+        max-height: calc(100vh - 120px);
+        background: rgba(26, 26, 46, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        border: 1px solid rgba(139, 69, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 69, 255, 0.2);
+        z-index: 1000;
+        overflow: hidden;
+    }
+
+    .ai-planner-content {
+        padding: 24px;
+        overflow-y: auto;
+        max-height: calc(100vh - 160px);
+    }
+
+        .ai-planner-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .ai-planner-content::-webkit-scrollbar-track {
+            background: rgba(139, 69, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .ai-planner-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #8b45ff, #6366f1);
+            border-radius: 3px;
+        }
+
+    .ai-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(139, 69, 255, 0.3);
+    }
+
+    .ai-icon {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #8b45ff, #6366f1);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        box-shadow: 0 0 15px rgba(139, 69, 255, 0.4);
+    }
+
+    .ai-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        text-shadow: 0 0 10px rgba(139, 69, 255, 0.3);
+    }
+
+    .map-section {
+        flex: 1;
+        position: relative;
+        background: #0a0a0f;
+        overflow: hidden;
+    }
+
+    #map {
+        width: 100%;
+        height: 100vh;
+        z-index: 1;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        color: #e2e8f0;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-control,
+    .form-select {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(139, 69, 255, 0.3);
+        color: #ffffff;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        width: 100%;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: #8b45ff;
+            color: #ffffff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(139, 69, 255, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+    .input-group {
+        display: flex;
+        gap: 6px;
+    }
+
+        .input-group .form-control {
+            flex: 1;
+        }
+
+    .btn-location {
+        background: linear-gradient(135deg, #8b45ff, #6366f1);
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(139, 69, 255, 0.3);
+    }
+
+        .btn-location:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(139, 69, 255, 0.4);
+        }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #8b45ff, #6366f1);
+        color: white;
+        border: none;
+        padding: 14px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        width: 100%;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 16px rgba(139, 69, 255, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 69, 255, 0.5);
+        }
+
+        .btn-submit::before {
+            content: "✨";
+            font-size: 16px;
+        }
+
+    .form-row {
+        display: flex;
+        gap: 10px;
+    }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+    .form-text {
+        color: #94a3b8;
+        font-size: 11px;
+        margin-top: 4px;
+        font-weight: 400;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .alert {
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        border-left: 4px solid;
+        backdrop-filter: blur(10px);
+    }
+
+    .alert-info {
+        background: rgba(139, 69, 255, 0.15);
+        border-color: #8b45ff;
+        color: #e2e8f0;
+    }
+
+    .alert-warning {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: #fbbf24;
+        color: #fef3c7;
+    }
+
+    .alert-success {
+        background: rgba(34, 197, 94, 0.15);
+        border-color: #22c55e;
+        color: #dcfce7;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(139, 69, 255, 0.3);
+        color: #e2e8f0;
+        font-size: 18px;
+        cursor: pointer;
+        z-index: 1001;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+        .close-btn:hover {
+            background: rgba(139, 69, 255, 0.2);
+            border-color: #8b45ff;
+            transform: scale(1.05);
+        }
+
+    .select2-container--default .select2-selection--multiple {
+        background: rgba(30, 41, 59, 0.8) !important;
+        border: 1px solid rgba(139, 69, 255, 0.3) !important;
+        color: #ffffff !important;
+        min-height: 45px;
+        border-radius: 8px !important;
+        backdrop-filter: blur(10px);
+    }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background: linear-gradient(135deg, #8b45ff, #6366f1) !important;
+            border: none !important;
+            color: white !important;
+            padding: 6px 12px !important;
+            margin: 4px !important;
+            border-radius: 16px !important;
+            font-weight: 500;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: white !important;
+            margin-right: 6px;
+        }
+
+    .select2-dropdown {
+        background: rgba(30, 41, 59, 0.95) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(139, 69, 255, 0.3) !important;
+        border-radius: 8px !important;
+    }
+
+    .select2-results__option {
+        color: #e2e8f0 !important;
+        background-color: transparent !important;
+        padding: 12px 16px;
+    }
+
+    .select2-results__option--highlighted {
+        background: linear-gradient(135deg, rgba(139, 69, 255, 0.3), rgba(99, 102, 241, 0.3)) !important;
+        color: #ffffff !important;
+    }
+
+    /* Modal chi tiết địa điểm */
+    .place-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+    }
+
+    .place-modal-content {
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+        margin: 5% auto;
+        padding: 30px;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(139, 69, 255, 0.3);
+        animation: slideDown 0.3s ease;
+    }
+
+    @@keyframes slideDown {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .place-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(139, 69, 255, 0.3);
+    }
+
+        .place-modal-header h3 {
+            background: linear-gradient(135deg, #8b45ff, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+
+    .close-modal {
+        background: linear-gradient(135deg, #8b45ff, #6366f1);
+        color: white;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+        .close-modal:hover {
+            transform: scale(1.1);
+        }
+
+    .place-info-item {
+        margin-bottom: 15px;
+        padding: 12px;
+        background: rgba(139, 69, 255, 0.1);
+        border-radius: 8px;
+        border: 1px solid rgba(139, 69, 255, 0.2);
+    }
+
+        .place-info-item strong {
+            color: #8b45ff;
+        }
+
+    /* Marker highlight effect */
+    .marker-highlight {
+        animation: pulse 1s infinite;
+        z-index: 1000 !important;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+    }
+
+    /* Autocomplete suggestions */
+    .suggestions-list {
+        position: absolute;
+        z-index: 9999;
+        background: rgba(30, 41, 59, 0.95);
+        color: #e2e8f0;
+        border: 1px solid rgba(139, 69, 255, 0.3);
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        width: 100%;
+        margin-top: 2px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        display: none;
+    }
+
+    .suggestion-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(139, 69, 255, 0.2);
+        transition: all 0.2s ease;
+    }
+
+        .suggestion-item:hover {
+            background: linear-gradient(135deg, rgba(139, 69, 255, 0.3), rgba(99, 102, 241, 0.3));
+            color: white;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+    /* Distance labels on map */
+    .distance-label {
+        background: transparent !important;
+        border: none !important;
+    }
+
+    .distance-label-content {
+        background: linear-gradient(135deg, #8b45ff, #6366f1);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 14px;
+        white-space: nowrap;
+        box-shadow: 0 4px 16px rgba(139, 69, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        backdrop-filter: blur(10px);
+        animation: pulse-glow-trip 2s ease-in-out infinite;
+    }
+
+    .distance-value {
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .distance-unit {
+        font-size: 12px;
+        font-weight: 600;
+        opacity: 0.9;
+        text-transform: uppercase;
+    }
+
+    @@keyframes pulse-glow-trip {
+        0%, 100% {
+            box-shadow: 0 4px 16px rgba(139, 69, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        50% {
+            box-shadow: 0 6px 20px rgba(139, 69, 255, 0.7), 0 3px 12px rgba(0, 0, 0, 0.4);
+        }
+    }
+
+    /* Suggestions section */
+    .suggestions-section {
+        margin: 0;
+        padding: 30px;
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+        border-top: 1px solid rgba(139, 69, 255, 0.3);
+    }
+
+        .suggestions-section h4 {
+            background: linear-gradient(135deg, #8b45ff, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+    .first-place-distance-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(139, 69, 255, 0.15);
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(139, 69, 255, 0.3);
+        font-size: 14px;
+        color: #e2e8f0;
+    }
+
+    .distance-icon {
+        font-size: 16px;
+    }
+
+    .distance-text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .distance-value {
+        color: #8b45ff;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .place-name {
+        color: #94a3b8;
+        font-size: 12px;
+        font-style: italic;
+    }
+
+    .accordion {
+        --bs-accordion-bg: transparent;
+        --bs-accordion-border-color: rgba(139, 69, 255, 0.3);
+        --bs-accordion-color: #e2e8f0;
+    }
+
+    .accordion-item {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(139, 69, 255, 0.3);
+        border-radius: 12px !important;
+        margin-bottom: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+        .accordion-item:hover {
+            border-color: rgba(139, 69, 255, 0.5);
+            box-shadow: 0 4px 20px rgba(139, 69, 255, 0.2);
+        }
+
+    .accordion-button {
+        background: rgba(30, 41, 59, 0.8);
+        color: #e2e8f0;
+        font-weight: 600;
+        border: none;
+        padding: 20px;
+        backdrop-filter: blur(10px);
+    }
+
+        .accordion-button:not(.collapsed) {
+            background: rgba(139, 69, 255, 0.2);
+            color: #ffffff;
+            box-shadow: none;
+        }
+
+    .accordion-body {
+        background: rgba(30, 41, 59, 0.9);
+        color: #e2e8f0;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+    }
+
+    @@keyframes pulse-marker {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 0 3px rgba(139, 69, 255, 0.3);
+        }
+        50% {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4), 0 0 0 6px rgba(139, 69, 255, 0.2);
+        }
+    }
+
+    @@keyframes pulse-start {
+        0%, 100% {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6), 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        50% {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.8), 0 6px 16px rgba(0,0,0,0.5);
+        }
+    }
+
+    @@keyframes pulse-end {
+        0%, 100% {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6), 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        50% {
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 6px 16px rgba(0,0,0,0.5);
+        }
+    }
+
+    /* Neon route effect */
+    .neon-route {
+        filter: drop-shadow(0 0 8px #8b45ff) drop-shadow(0 0 16px #8b45ff66);
+        animation: route-glow 3s ease-in-out infinite alternate;
+    }
+
+    @@keyframes route-glow {
+        0% {
+            filter: drop-shadow(0 0 8px #8b45ff) drop-shadow(0 0 16px #8b45ff66);
+        }
+
+        100% {
+            filter: drop-shadow(0 0 12px #8b45ff) drop-shadow(0 0 24px #8b45ff88);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .ai-planner-overlay {
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            width: auto;
+            max-height: calc(100vh - 20px);
+        }
+
+        .ai-planner-content {
+            padding: 20px;
+            max-height: calc(100vh - 60px);
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .btn-submit {
+            padding: 12px 16px;
+            font-size: 13px;
+        }
+
+        .ai-title {
+            font-size: 16px;
+        }
+
+        .ai-icon {
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+        }
+    }
+</style>
+
+<div class="trip-planner-container">
+    <!-- Map Section (Full Screen) -->
+    <div class="map-section">
+        <div id="map"></div>
+    </div>
+
+    <!-- AI Planner Overlay (Top Left) -->
+    <div class="ai-planner-overlay">
+        <a href="@Url.Action("Index", "Home")" class="close-btn" style="text-decoration: none; color: #e2e8f0;">×</a>
+
+        <div class="ai-planner-content">
+            <div class="ai-header">
+                <div class="ai-icon">🤖</div>
+                <h1 class="ai-title">AI Planner</h1>
+            </div>
+
+            <form asp-action="Index" method="post" id="tripForm">
+                <input type="hidden" asp-for="DistanceKm" id="DistanceKm" />
+                <input type="hidden" asp-for="StartLatitude" id="StartLatitude" />
+                <input type="hidden" asp-for="StartLongitude" id="StartLongitude" />
+
+                <!-- Điểm xuất phát -->
+                <div class="form-group" style="position: relative;">
+                    <label class="form-label">Điểm xuất phát</label>
+                    <div class="input-group">
+                        <input asp-for="StartLocation" id="startLocation" class="form-control" placeholder="Nhập địa chỉ xuất phát..." autocomplete="off" />
+                        <button type="button" class="btn-location" onclick="getCurrentLocation()" title="Lấy vị trí hiện tại">
+                            📍
+                        </button>
+                    </div>
+                    <div id="startLocationSuggestions" class="suggestions-list"></div>
+                    <small class="form-text">Nhấp vào nút 📍 để tự động lấy vị trí GPS</small>
+                </div>
+
+                <!-- Số ngày và Ngân sách -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Số ngày</label>
+                        <input asp-for="NumberOfDays" class="form-control" type="number" min="1" value="1" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngân sách</label>
+                        <input asp-for="Budget" class="form-control" type="number" min="0" required placeholder="VNĐ" />
+                    </div>
+                </div>
+
+                <!-- Nhịp độ -->
+                <div class="form-group">
+                    <label class="form-label">Nhịp độ</label>
+                    <select asp-for="Pace" class="form-select">
+                        <option value="@((int)TravelPace.Relaxed)">😌 Thư giãn (~6-7 tiếng/ngày)</option>
+                        <option value="@((int)TravelPace.Moderate)" selected>🎯 Bình thường (~9-10 tiếng/ngày)</option>
+                        <option value="@((int)TravelPace.Fast)">⚡ Tích cực (~12-13 tiếng/ngày)</option>
+                    </select>
+                </div>
+
+                <!-- Phương tiện -->
+                <div class="form-group">
+                    <label class="form-label">Phương tiện</label>
+                    <select asp-for="SelectedTransportId" class="form-select" asp-items="Model.TransportSelectList">
+                        <option value="">-- Tất cả phương tiện --</option>
+                    </select>
+                </div>
+
+                <!-- Danh mục -->
+                <div class="form-group">
+                    <label class="form-label">Danh mục</label>
+                    <select asp-for="SelectedCategoryId" asp-items="@(new SelectList(Model.Categories,"Id","Name"))" class="form-select" id="CategoryDropdown">
+                        <option value="">-- Tất cả danh mục --</option>
+                    </select>
+                </div>
+
+                <!-- Địa điểm muốn đến -->
+                <div class="form-group">
+                    <label class="form-label">Địa điểm muốn đến</label>
+                    <select asp-for="SelectedTouristPlaceIds" class="form-control" id="TouristPlaceDropdown" multiple>
+                        @foreach (var tp in Model.TouristPlaces)
+                        {
+                            <option value="@tp.Id" data-lat="@tp.Latitude" data-lng="@tp.Longitude" data-category="@tp.CategoryId">@tp.Name</option>
+                        }
+                    </select>
+                    <small id="selectedCount" class="form-text"></small>
+                    <button type="button" class="btn-location mt-2" id="clearAllBtn" style="width: 100%; padding: 8px; margin-top: 8px;">Xóa tất cả</button>
+                </div>
+
+                <!-- Thông báo -->
+                <div class="alert alert-info">
+                    <strong>💡 Lưu ý:</strong>
+                    <ul class="mb-0 mt-2" style="padding-left: 20px; font-size: 11px;">
+                        <li>Chọn địa điểm cụ thể → Hệ thống lập kế hoạch cho đúng những địa điểm đã chọn</li>
+                        <li>Không chọn địa điểm → Hệ thống tự động đề xuất dựa trên ngân sách</li>
+                    </ul>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit">Tạo Lịch Trình Ngay</button>
+            </form>
+
+            <!-- Thông báo -->
+            @if (ViewBag.TransportPrice != null)
+            {
+                <div class="alert alert-@(ViewBag.TransportPriceType == "Fixed" ? "success" : "warning") mt-4">
+                    <h5 style="font-size: 14px; margin-bottom: 8px;">🚗 Chi phí vận chuyển</h5>
+                    <p class="mb-2">
+                        <strong>Giá vé:</strong>
+                        <span style="font-size: 16px; color: #8b45ff;">@string.Format("{0:N0}đ", ViewBag.TransportPrice)</span>
+                    </p>
+                </div>
+            }
+
+            @if (ViewBag.TransportWarning != null)
+            {
+                <div class="alert alert-warning mt-3">
+                    <strong>⚠️ Lưu ý:</strong> @ViewBag.TransportWarning
+                </div>
+            }
+
+            @if (ViewBag.LocationSuggestion != null)
+            {
+                <div class="alert alert-info mt-3">
+                    <strong>💡 Gợi ý:</strong> @ViewBag.LocationSuggestion
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal chi tiết địa điểm -->
+<div id="placeModal" class="place-modal">
+    <div class="place-modal-content">
+        <div class="place-modal-header">
+            <h3 id="modalPlaceName"></h3>
+            <button class="close-modal" onclick="closePlaceModal()">&times;</button>
+        </div>
+        <div id="modalPlaceContent">
+            <!-- Nội dung sẽ được điền bằng JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- Suggestions Section (Below form, full width) -->
+@if (Model.Suggestions != null && Model.Suggestions.Count > 0)
+
+{
+    <div class="suggestions-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">🎯 Gợi ý lịch trình du lịch</h4>
+            @if (ViewBag.FirstPlaceDistanceKm != null)
+
+            {
+                <div class="first-place-distance-info">
+                    <span class="distance-icon">📍</span>
+                    <span class="distance-text">
+                        Khoảng cách đến điểm đầu tiên (theo gợi ý):
+                        <strong class="distance-value">@ViewBag.FirstPlaceDistanceKm km</strong>
+                        @if (ViewBag.FirstPlaceName != null)
+
+                        {
+                            <span class="place-name">(@ViewBag.FirstPlaceName)</span>
+                        }
+                    </span>
+                    <small class="distance-note" style="display: block; margin-top: 0.25rem; font-size: 0.75rem; color: #666;">
+                        ℹ️ Cả hai đều tính bằng OSRM (đường đi thực tế). Nếu khác nhau, có thể do: km trên bản đồ = đến điểm đầu tiên bạn chọn, km điểm đầu = đến điểm đầu tiên hệ thống gợi ý (sau khi sắp xếp lại).
+                    </small>
+                </div>
+            }
+        </div>
+        <div class="accordion" id="accordionSuggestions">
+            @for (int i = 0; i < Model.Suggestions.Count; i++)
+
+            {
+
+                var suggestionId = $"suggestion{i}";
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading-@suggestionId">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@suggestionId">
+                            <span style="font-size: 18px; margin-right: 10px;">
+                                @if (i == 0)
+                                {
+                                    <text>🔥</text>
+                                }
+
+                                else if (i == 1)
+                                {
+                                    <text>🎯</text>
+                                }
+
+                                else
+                                {
+                                    <text>🌟</text>
+                                }
+                            </span>
+                            Gói gợi ý @(i + 1)
+                        </button>
+                    </h2>
+                    <div id="collapse-@suggestionId" class="accordion-collapse collapse" data-bs-parent="#accordionSuggestions">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <canvas id="chart-@suggestionId" style="max-width: 100%; max-height: 350px;"></canvas>
+                                    <div class="expenses-container-@suggestionId"></div>
+                                </div>
+                                <div class="col-md-7">
+                                    <div class="suggestion-wrapper">
+                                        @Html.Raw(Model.Suggestions[i])
+
+                                        @if (Model.SuggestionViewModels != null && i < Model.SuggestionViewModels.Count)
+
+                                        {
+                                            <!-- New clean Razor-based summary card for this suggestion -->
+                                            @Html.Partial("_TripSuggestionPartial", Model.SuggestionViewModels[i])
+                                        }
+                                    </div>
+                                    <button class="btn-submit mt-3" onclick="selectSuggestion(@i)" style="width: auto; padding: 10px 30px;">
+                                        ✅ Chọn lịch trình này
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+    var touristPlaces = @Html.Raw(touristPlacesJson ?? "[]");
+    var map;
+    var markers = [];
+    var routingControl;
+    var routeLine;
+    var distanceLabels = [];
+    var savedRouteData = null; // Lưu thông tin route để restore sau khi submit
+
+    function initMap() {
+        setTimeout(function () { $('#CategoryDropdown').trigger('change'); }, 0);
+        map = L.map('map').setView([
+            touristPlaces.length > 0 ? touristPlaces[0].Latitude : 11.9404,
+            touristPlaces.length > 0 ? touristPlaces[0].Longitude : 108.4583
+        ], 12);
+
+        // Sử dụng CartoDB Voyager theme - sáng hơn, đẹp hơn
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Tạo custom icon phù hợp với bản đồ sáng
+        function createCustomIcon(color) {
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="
+                    background: linear-gradient(135deg, ${color} 0%, ${color}dd 100%);
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50% 50% 50% 0;
+                    transform: rotate(-45deg);
+                    border: 2px solid rgba(255, 255, 255, 0.9);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 0 3px ${color}33;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    animation: pulse-marker 2s ease-in-out infinite;
+                ">
+                    <span style="transform: rotate(45deg); color: white; font-size: 16px; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">📍</span>
+                </div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32]
+            });
+        }
+
+        touristPlaces.forEach(function (place) {
+            if (place.Latitude && place.Longitude) {
+                var colors = ['#8b45ff', '#6366f1', '#ec4899', '#f59e0b', '#10b981'];
+                var color = colors[Math.floor(Math.random() * colors.length)];
+
+                var marker = L.marker([place.Latitude, place.Longitude], {
+                    icon: createCustomIcon(color)
+                })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="min-width: 200px; background: rgba(255, 255, 255, 0.95); color: #333; padding: 15px; border-radius: 8px; border: 1px solid rgba(139, 69, 255, 0.3); box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                            <b style="color: #8b45ff; font-size: 16px;">${place.Name}</b><br/>
+                            <small style="color: #666;">Bấm để xem chi tiết</small>
+                        </div>
+                    `)
+                    .on('click', function () {
+                        // Highlight marker với hiệu ứng neon
+                        marker.setIcon(createCustomIcon('#ff0080'));
+                        setTimeout(function () {
+                            marker.setIcon(createCustomIcon(color));
+                        }, 1000);
+
+                        // Chọn trong dropdown
+                        var dropdown = document.getElementById('TouristPlaceDropdown');
+                        for (var i = 0; i < dropdown.options.length; i++) {
+                            if (dropdown.options[i].value == place.Id) {
+                                dropdown.options[i].selected = true;
+                                break;
+                            }
+                        }
+                        $('#TouristPlaceDropdown').trigger('change');
+
+                        // Hiển thị modal chi tiết
+                        showPlaceModal(place);
+
+                        calculateDistance();
+                    });
+                markers.push(marker);
+            }
+        });
+    }
+
+    function calculateDistance() {
+        var start = document.getElementById('startLocation').value;
+        var dropdown = document.getElementById('TouristPlaceDropdown');
+        var selectedOptions = Array.from(dropdown.selectedOptions);
+
+        if (selectedOptions.length > 0 && start) {
+            var lat = selectedOptions[0].getAttribute('data-lat');
+            var lng = selectedOptions[0].getAttribute('data-lng');
+            if (lat && lng) {
+                var nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(start)}&limit=1&countrycodes=vn`;
+                fetch(nominatimUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            var startLat = parseFloat(data[0].lat);
+                            var startLng = parseFloat(data[0].lon);
+                            document.getElementById('StartLatitude').value = startLat;
+                            document.getElementById('StartLongitude').value = startLng;
+                            var endLat = parseFloat(lat);
+                            var endLng = parseFloat(lng);
+
+                            var osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+                            fetch(osrmUrl)
+                                .then(response => response.json())
+                                .then(routeData => {
+                                    if (routeData.routes && routeData.routes.length > 0) {
+                                        var distanceInKm = routeData.routes[0].distance / 1000;
+                                        document.getElementById('DistanceKm').value = distanceInKm.toFixed(2);
+                                        showRoute(startLat, startLng, endLat, endLng, routeData.routes[0].geometry, distanceInKm);
+                                    } else {
+                                        var distance = calculateHaversineDistance(startLat, startLng, endLat, endLng);
+                                        document.getElementById('DistanceKm').value = distance.toFixed(2);
+                                        showRoute(startLat, startLng, endLat, endLng, null, distance);
+                                    }
+                                });
+                        }
+                    });
+            }
+        }
+    }
+
+    function showRoute(startLat, startLng, endLat, endLng, geometry, distanceKm) {
+        // ✅ Lưu thông tin route để restore sau khi submit
+        savedRouteData = {
+            startLat: startLat,
+            startLng: startLng,
+            endLat: endLat,
+            endLng: endLng,
+            geometry: geometry,
+            distanceKm: distanceKm
+        };
+
+        // Xóa route cũ nếu có
+        if (routeLine) {
+            map.removeLayer(routeLine);
+            routeLine = null;
+        }
+
+        // Xóa tất cả distance labels cũ
+        distanceLabels.forEach(function (label) {
+            if (map.hasLayer(label)) {
+                map.removeLayer(label);
+            }
+        });
+        distanceLabels = [];
+
+        if (routingControl) {
+            map.removeControl(routingControl);
+        }
+
+        var coordinates = geometry && geometry.coordinates ? geometry.coordinates.map(coord => [coord[1], coord[0]]) : [];
+
+        if (coordinates.length > 0) {
+            // Vẽ đường đi với màu nổi bật trên bản đồ sáng
+            routeLine = L.polyline(coordinates, {
+                color: '#6366f1',
+                weight: 5,
+                opacity: 0.8,
+                dashArray: '10, 5',
+                className: 'route-line'
+            }).addTo(map);
+
+            // Thêm marker điểm bắt đầu và kết thúc với hiệu ứng neon
+            L.marker([startLat, startLng], {
+                icon: L.divIcon({
+                    className: 'start-marker',
+                    html: `<div style="
+                            background: linear-gradient(135deg, #10b981, #059669);
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 50%;
+                            border: 2px solid rgba(255, 255, 255, 0.9);
+                            box-shadow: 0 0 15px #10b98166, 0 4px 12px rgba(0,0,0,0.4);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            animation: pulse-start 2s ease-in-out infinite;
+                        ">
+                            <span style="color: white; font-size: 14px; font-weight: bold;">S</span>
+                        </div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                })
+            }).addTo(map);
+
+            L.marker([endLat, endLng], {
+                icon: L.divIcon({
+                    className: 'end-marker',
+                    html: `<div style="
+                            background: linear-gradient(135deg, #ef4444, #dc2626);
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 50%;
+                            border: 2px solid rgba(255, 255, 255, 0.9);
+                            box-shadow: 0 0 15px #ef444466, 0 4px 12px rgba(0,0,0,0.4);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            animation: pulse-end 2s ease-in-out infinite;
+                        ">
+                            <span style="color: white; font-size: 14px; font-weight: bold;">E</span>
+                        </div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                })
+            }).addTo(map);
+
+            // Hiển thị số km trên đường đi - chỉ hiển thị 1 label ở giữa đường
+            // LƯU Ý: Đây là khoảng cách từ điểm xuất phát đến điểm đích ĐẦU TIÊN được chọn trong dropdown
+            // (Có thể khác với "km điểm đầu" trong gợi ý vì thuật toán có thể sắp xếp lại thứ tự)
+            if (distanceKm !== undefined && distanceKm !== null) {
+                var distance = distanceKm.toFixed(1);
+
+                // ✅ FIX: Chỉ hiển thị 1 label ở giữa đường (50%)
+                var midIndex = Math.floor(coordinates.length * 0.5);
+
+                if (midIndex >= 0 && midIndex < coordinates.length) {
+                    var labelPoint = coordinates[midIndex];
+                    var distanceLabel = L.marker(labelPoint, {
+                        icon: L.divIcon({
+                            className: 'distance-label',
+                            html: `<div class="distance-label-content">
+                                    <span class="distance-value">${distance}</span>
+                                    <span class="distance-unit">km</span>
+                                </div>`,
+                            iconSize: [100, 40],
+                            iconAnchor: [50, 20]
+                        }),
+                        interactive: false,
+                        zIndexOffset: 1000
+                    }).addTo(map);
+
+                    distanceLabels.push(distanceLabel);
+                }
+            }
+
+            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+        } else if (distanceKm !== undefined && distanceKm !== null) {
+            // Nếu không có geometry nhưng có distance, vẽ đường thẳng
+            var straightLine = L.polyline([[startLat, startLng], [endLat, endLng]], {
+                color: '#6366f1',
+                weight: 5,
+                opacity: 0.8,
+                dashArray: '15, 10',
+                className: 'route-line'
+            }).addTo(map);
+
+            routeLine = straightLine;
+
+            // Hiển thị km ở giữa đường
+            var midLat = (startLat + endLat) / 2;
+            var midLng = (startLng + endLng) / 2;
+            var distance = distanceKm.toFixed(1);
+
+            var distanceLabel = L.marker([midLat, midLng], {
+                icon: L.divIcon({
+                    className: 'distance-label',
+                    html: `<div class="distance-label-content">
+                            <span class="distance-value">${distance}</span>
+                            <span class="distance-unit">km</span>
+                        </div>`,
+                    iconSize: [100, 40],
+                    iconAnchor: [50, 20]
+                }),
+                interactive: false,
+                zIndexOffset: 1000
+            }).addTo(map);
+
+            distanceLabels.push(distanceLabel);
+
+            // Thêm markers với hiệu ứng neon
+            L.marker([startLat, startLng], {
+                icon: L.divIcon({
+                    className: 'start-marker',
+                    html: `<div style="
+                            background: linear-gradient(135deg, #10b981, #059669);
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 50%;
+                            border: 2px solid rgba(255, 255, 255, 0.9);
+                            box-shadow: 0 0 15px #10b98166, 0 4px 12px rgba(0,0,0,0.4);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            animation: pulse-start 2s ease-in-out infinite;
+                        ">
+                            <span style="color: white; font-size: 14px; font-weight: bold;">S</span>
+                        </div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                })
+            }).addTo(map);
+
+            L.marker([endLat, endLng], {
+                icon: L.divIcon({
+                    className: 'end-marker',
+                    html: `<div style="
+                            background: linear-gradient(135deg, #ef4444, #dc2626);
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 50%;
+                            border: 2px solid rgba(255, 255, 255, 0.9);
+                            box-shadow: 0 0 15px #ef444466, 0 4px 12px rgba(0,0,0,0.4);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            animation: pulse-end 2s ease-in-out infinite;
+                        ">
+                            <span style="color: white; font-size: 14px; font-weight: bold;">E</span>
+                        </div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                })
+            }).addTo(map);
+
+            map.fitBounds(straightLine.getBounds(), { padding: [50, 50] });
+        }
+    }
+
+    function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+        var R = 6371;
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    function getCurrentLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    var lat = position.coords.latitude.toFixed(4);
+                    var lng = position.coords.longitude.toFixed(4);
+                    document.getElementById('StartLatitude').value = lat;
+                    document.getElementById('StartLongitude').value = lng;
+
+                    var nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&countrycodes=vn`;
+                    fetch(nominatimUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.display_name) {
+                                document.getElementById('startLocation').value = data.display_name;
+                                alert('✅ Đã lấy vị trí của bạn: ' + data.display_name);
+                            } else {
+                                alert('✅ Đã lấy vị trí của bạn! (Tọa độ: ' + lat + ', ' + lng + ')');
+                            }
+                            calculateDistance();
+                        })
+                        .catch(function () {
+                            alert('✅ Đã lấy vị trí của bạn! (Tọa độ: ' + lat + ', ' + lng + ')');
+                            calculateDistance();
+                        });
+                },
+                function (error) {
+                    var errorMsg = '❌ Không thể lấy vị trí: ';
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg += 'Bạn đã từ chối quyền truy cập vị trí.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg += 'Thông tin vị trí không khả dụng.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg += 'Hết thời gian chờ lấy vị trí.';
+                            break;
+                        default:
+                            errorMsg += 'Lỗi không xác định.';
+                            break;
+                    }
+                    alert(errorMsg);
+                }
+            );
+        } else {
+            alert('❌ Trình duyệt của bạn không hỗ trợ Geolocation API');
+        }
+    }
+
+    window.onload = initMap;
+
+    $(document).ready(function () {
+        var $dropdown = $('#TouristPlaceDropdown');
+
+        // ✅ FIX: Destroy Select2 nếu đã được khởi tạo trước đó (sau form submit)
+        if ($dropdown.hasClass('select2-hidden-accessible')) {
+            $dropdown.select2('destroy');
+        }
+
+        $dropdown.select2({
+            placeholder: 'Chọn địa điểm muốn đến',
+            width: '100%',
+            allowClear: true,
+            closeOnSelect: false,
+            language: {
+                noResults: function () {
+                    return "Không tìm thấy kết quả";
+                },
+                searching: function () {
+                    return "Đang tìm kiếm...";
+                }
+            }
+        });
+
+        function updateSelectedCount() {
+            var count = $dropdown.val() ? $dropdown.val().length : 0;
+            $('#selectedCount').text('Đã chọn: ' + count);
+        }
+        updateSelectedCount();
+
+        $dropdown.on('change', function () {
+            updateSelectedCount();
+            calculateDistance();
+        });
+
+        // ✅ MỚI: Autocomplete cho ô nhập địa chỉ (áp dụng từ CarpoolController)
+        var startLocationSuggestions = [];
+        var geocodeTimeout;
+
+        $('#startLocation').on('input', function () {
+            clearTimeout(geocodeTimeout);
+            clearTimeout(window.__startDebounce);
+            var address = $(this).val();
+            if (address.length >= 3) {
+                geocodeTimeout = setTimeout(() => geocodeStartLocationWithSuggestions(address), 500);
+            } else {
+                hideStartLocationSuggestions();
+            }
+            // Vẫn giữ logic calculateDistance
+            window.__startDebounce = setTimeout(calculateDistance, 400);
+        });
+
+        $('#startLocation').on('blur', function () {
+            // Delay để cho phép click vào suggestion
+            setTimeout(() => {
+                hideStartLocationSuggestions();
+                calculateDistance();
+            }, 200);
+        });
+
+        async function geocodeStartLocationWithSuggestions(address) {
+            var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=10&countrycodes=vn&addressdetails=1&accept-language=vi`;
+
+            try {
+                var response = await fetch(url, {
+                    headers: { 'User-Agent': 'nhom8dalat-app' }
+                });
+                var data = await response.json();
+
+                if (data && data.length > 0) {
+                    startLocationSuggestions = data.slice(0, 10);
+                    showStartLocationSuggestions(startLocationSuggestions);
+                } else {
+                    hideStartLocationSuggestions();
+                }
+            } catch (error) {
+                console.error('Lỗi geocoding:', error);
+                hideStartLocationSuggestions();
+            }
+        }
+
+        function showStartLocationSuggestions(suggestions) {
+            var container = $('#startLocationSuggestions');
+            container.empty();
+
+            suggestions.forEach(item => {
+                var itemDiv = $('<div class="suggestion-item"></div>');
+                itemDiv.append($('<span></span>').text(item.display_name))
+                    .on('click', () => selectStartLocationSuggestion(item));
+                container.append(itemDiv);
+            });
+
+            container.show();
+        }
+
+        function hideStartLocationSuggestions() {
+            $('#startLocationSuggestions').hide();
+        }
+
+        function selectStartLocationSuggestion(item) {
+            var lat = parseFloat(item.lat);
+            var lng = parseFloat(item.lon);
+            var address = item.display_name;
+
+            $('#startLocation').val(address);
+            $('#StartLatitude').val(lat);
+            $('#StartLongitude').val(lng);
+
+            hideStartLocationSuggestions();
+            calculateDistance();
+        }
+
+        $('#CategoryDropdown').on('change', function () {
+            var selectedCategory = $(this).val();
+            $("#TouristPlaceDropdown option").each(function () {
+                var categoryId = $(this).data('category');
+                if (selectedCategory === "" || categoryId == selectedCategory) {
+                    $(this).prop('disabled', false).show();
+                } else {
+                    if (!$(this).is(':selected')) {
+                        $(this).prop('disabled', true).hide();
+                    }
+                }
+            });
+            $dropdown.trigger('change.select2');
+        });
+
+        $('#clearAllBtn').on('click', function () {
+            $dropdown.val(null).trigger('change');
+        });
+
+        // ✅ FIX: Đảm bảo tất cả options được enable và hiển thị sau khi khởi tạo
+        $("#TouristPlaceDropdown option").prop('disabled', false).show();
+
+        function drawSuggestionCharts() {
+            document.querySelectorAll('#accordionSuggestions .accordion-item').forEach(function (item) {
+                var wrapper = item.querySelector('.suggestion-wrapper .suggestion');
+                var canvas = item.querySelector('canvas');
+                if (!wrapper || !canvas) return;
+
+                var values = {
+                    food: parseFloat(wrapper.getAttribute('data-food') || '0'),
+                    hotel: parseFloat(wrapper.getAttribute('data-hotel') || '0'),
+                    local: parseFloat(wrapper.getAttribute('data-local') || '0'),
+                    ticket: parseFloat(wrapper.getAttribute('data-ticket') || '0'),
+                    misc: parseFloat(wrapper.getAttribute('data-misc') || '0')
+                };
+                var transport = parseFloat(wrapper.getAttribute('data-transport') || '0');
+
+                var dataset = [values.food, values.hotel, transport, values.ticket, values.misc];
+                var labels = ['🍽️ Ăn uống', '🏨 Khách sạn', '🚗 Di chuyển', '🎫 Vé', '💡 Phát sinh'];
+                var sum = dataset.reduce(function (a, b) { return a + b; }, 0) || 1;
+
+                // Màu pastel du lịch
+                var pastelColors = [
+                    'rgba(255, 182, 193, 0.8)',  // Pink pastel
+                    'rgba(176, 224, 230, 0.8)',  // Light blue
+                    'rgba(255, 218, 185, 0.8)',  // Peach
+                    'rgba(221, 160, 221, 0.8)',  // Plum
+                    'rgba(152, 251, 152, 0.8)'   // Light green
+                ];
+
+                new Chart(canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: dataset,
+                            backgroundColor: pastelColors,
+                            borderWidth: 3,
+                            borderColor: 'rgba(255, 255, 255, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', labels: { color: 'white' } },
+                            datalabels: {
+                                color: '#333',
+                                formatter: function (value, ctx) {
+                                    var pct = (value / sum) * 100;
+                                    if (!value || pct < 1) return '';
+                                    return pct.toFixed(1) + '%\n' + new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+                                },
+                                font: { weight: 'bold' }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        var v = context.parsed;
+                                        var pct = (v / sum) * 100;
+                                        return context.label + ': ' + new Intl.NumberFormat('vi-VN').format(v) + 'đ (' + pct.toFixed(1) + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            });
+        }
+
+        function rearrangeSuggestionLayout() {
+            document.querySelectorAll('#accordionSuggestions .accordion-item').forEach(function (item, index) {
+                var suggestionId = `suggestion${index}`;
+                var wrapper = item.querySelector('.suggestion-wrapper');
+                if (!wrapper) return;
+
+                var expensesSection = wrapper.querySelector('.expenses-section');
+                var summarySection = wrapper.querySelector('.summary-section');
+                var expensesContainer = item.querySelector(`.expenses-container-${suggestionId}`);
+
+                if (expensesSection && expensesContainer) {
+                    // Di chuyển phần chi phí chi tiết sang cột trái
+                    expensesContainer.appendChild(expensesSection);
+                }
+
+                // Giữ phần tổng quan ở cột phải (đã có sẵn trong wrapper)
+            });
+        }
+
+        drawSuggestionCharts();
+        rearrangeSuggestionLayout();
+        document.getElementById('accordionSuggestions')?.addEventListener('shown.bs.collapse', function () {
+            drawSuggestionCharts();
+            rearrangeSuggestionLayout();
+        });
+
+        // ✅ FIX: Restore route sau khi submit form (khi có suggestions)
+        // Nếu có thông tin route đã lưu và có suggestions, restore lại đường đi
+    @if (Model.Suggestions != null && Model.Suggestions.Count > 0)
+    {
+        <text>
+                    setTimeout(function() {
+                        // Kiểm tra xem có thông tin route từ form không
+                        var startLat = parseFloat($('#StartLatitude').val());
+                    var startLng = parseFloat($('#StartLongitude').val());
+                    var dropdown = $('#TouristPlaceDropdown');
+                    var selectedOptions = Array.from(dropdown[0].selectedOptions);
+
+                        if (selectedOptions.length > 0 && startLat && startLng) {
+                            var endLat = parseFloat(selectedOptions[0].getAttribute('data-lat'));
+                    var endLng = parseFloat(selectedOptions[0].getAttribute('data-lng'));
+
+                    if (endLat && endLng) {
+                                // Tính lại route để hiển thị
+                                var osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+                    fetch(osrmUrl)
+                                    .then(response => response.json())
+                                    .then(routeData => {
+                                        if (routeData.routes && routeData.routes.length > 0) {
+                                            var distanceInKm = routeData.routes[0].distance / 1000;
+                    showRoute(startLat, startLng, endLat, endLng, routeData.routes[0].geometry, distanceInKm);
+                                        } else {
+                                            var distance = calculateHaversineDistance(startLat, startLng, endLat, endLng);
+                    showRoute(startLat, startLng, endLat, endLng, null, distance);
+                                        }
+                                    })
+                    .catch(function() {
+                                        // Nếu OSRM lỗi, dùng Haversine
+                                        var distance = calculateHaversineDistance(startLat, startLng, endLat, endLng);
+                    showRoute(startLat, startLng, endLat, endLng, null, distance);
+                                    });
+                            }
+                        }
+                    }, 500); // Delay một chút để đảm bảo map đã render xong
+        </text>
+    }
+
+            // Hàm xử lý mở/đóng accordion chi phí chi tiết
+            window.toggleExpenseAccordion = function(accordionId) {
+                var content = document.getElementById(accordionId);
+                var icon = document.getElementById(accordionId + '-icon');
+                if (content && icon) {
+                    if (content.style.display === 'none') {
+                        content.style.display = 'block';
+                        icon.style.transform = 'rotate(180deg)';
+                        icon.textContent = '▲';
+                    } else {
+                        content.style.display = 'none';
+                        icon.style.transform = 'rotate(0deg)';
+                        icon.textContent = '▼';
+                    }
+                }
+            };
+    });
+
+    // Modal functions
+    function showPlaceModal(place) {
+        document.getElementById('modalPlaceName').textContent = place.Name || 'Địa điểm';
+        var content = `
+                <div class="place-info-item">
+                    <strong>📍 Tọa độ:</strong> ${place.Latitude?.toFixed(6)}, ${place.Longitude?.toFixed(6)}
+                </div>
+                ${place.Rating ? `
+                <div class="place-info-item">
+                    <strong>⭐ Đánh giá:</strong> ${'★'.repeat(place.Rating)} ${place.Rating}/5
+                </div>
+                ` : ''}
+                ${place.Description ? `
+                <div class="place-info-item">
+                    <strong>📝 Mô tả:</strong> ${place.Description}
+                </div>
+                ` : ''}
+                <div class="place-info-item">
+                    <strong>🗺️ Vị trí trên bản đồ:</strong> Đã được đánh dấu
+                </div>
+                <button class="btn-submit mt-3" onclick="selectPlaceInDropdown('${place.Id}')" style="width: 100%;">
+                    ✅ Chọn địa điểm này
+                </button>
+            `;
+        document.getElementById('modalPlaceContent').innerHTML = content;
+        document.getElementById('placeModal').style.display = 'block';
+    }
+
+    function closePlaceModal() {
+        document.getElementById('placeModal').style.display = 'none';
+    }
+
+    function selectPlaceInDropdown(placeId) {
+        var dropdown = document.getElementById('TouristPlaceDropdown');
+        for (var i = 0; i < dropdown.options.length; i++) {
+            if (dropdown.options[i].value == placeId) {
+                dropdown.options[i].selected = true;
+                break;
+            }
+        }
+        $('#TouristPlaceDropdown').trigger('change');
+        closePlaceModal();
+    }
+
+    function selectSuggestion(index) {
+        alert('✅ Đã chọn gói gợi ý ' + (index + 1) + '! Bạn có thể lưu hoặc in lịch trình này.');
+        // Có thể thêm logic lưu lịch trình vào đây
+    }
+
+    // ✅ Toggle hiển thị danh sách địa điểm chi tiết
+    function togglePlacesDetail(detailId) {
+        var detailDiv = document.getElementById(detailId);
+        var btnText = document.getElementById(detailId + '-btn-text');
+
+        if (detailDiv.style.display === 'none' || detailDiv.style.display === '') {
+            detailDiv.style.display = 'block';
+            if (btnText) btnText.textContent = '👁️ Ẩn chi tiết';
+        } else {
+            detailDiv.style.display = 'none';
+            if (btnText) btnText.textContent = '👁️ Xem chi tiết';
+        }
+    }
+
+    // Đóng modal khi click bên ngoài
+    window.onclick = function (event) {
+        var modal = document.getElementById('placeModal');
+        if (event.target == modal) {
+            closePlaceModal();
+        }
+    }
+</script>

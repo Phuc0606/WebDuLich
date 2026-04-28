@@ -1,0 +1,1646 @@
+@model WebDuLichDaLat.Models.TouristPlace
+@using WebDuLichDaLat.Models
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<User> SignInManager
+
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "~/Views/Shared/_LayoutNoFooter.cshtml";
+    
+    var allImages = new List<string>();
+    if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        allImages.Add(Model.ImageUrl);
+    }
+    if (Model.ImageUrls != null && Model.ImageUrls.Any())
+    {
+        allImages.AddRange(Model.ImageUrls);
+    }
+
+    double avgRating = ViewBag.AverageRating ?? 0;
+    int ratingCount = ViewBag.RatingCount ?? 0;
+    int rounded = (int)Math.Round(avgRating);
+}
+
+<!-- Import Modern Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+<!-- Leaflet CSS for OpenStreetMap -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+      crossorigin="" />
+
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+        crossorigin=""></script>
+
+<!-- Hero Banner Section -->
+<section class="hero-banner" style="height: 100vh; position: relative; overflow: hidden; margin-top: 0; padding-top: 80px; display: flex; align-items: center;">
+    <!-- Background Image -->
+    @if (allImages.Any())
+    {
+        var heroImage = allImages.First();
+        var imageUrl = heroImage.StartsWith("~") ? Url.Content(heroImage) : 
+                      heroImage.Contains("/") ? heroImage : 
+                      Url.Content($"~/Images/{System.IO.Path.GetFileName(heroImage)}");
+        <div class="hero-bg" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('@imageUrl') center/cover; z-index: 1;"></div>
+    }
+    else
+    {
+        <div class="hero-bg" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); z-index: 1;"></div>
+    }
+    
+    <!-- Festive Spotlight Effects -->
+    <div class="festive-spotlight-bg" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none;">
+        <div class="spotlight-orb spotlight-orb-1"></div>
+        <div class="spotlight-orb spotlight-orb-2"></div>
+        <div class="spotlight-orb spotlight-orb-3"></div>
+        <div class="spotlight-orb spotlight-orb-4"></div>
+    </div>
+    
+    <!-- Hero Content Overlay -->
+    <div class="hero-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center;">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-10">
+                    <!-- Breadcrumb Navigation -->
+                    <nav class="breadcrumb-nav mb-4" style="display: flex; justify-content: center;">
+                        <div class="breadcrumb-container" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; padding: 12px 25px;">
+                            <a href="@Url.Action("Index", "Home")" style="color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500;">Trang chủ</a>
+                            <i class="bi bi-chevron-right mx-2" style="color: rgba(255,255,255,0.6);"></i>
+                            <a href="@Url.Action("Index", "TouristPlace")" style="color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500;">Địa điểm</a>
+                            <i class="bi bi-chevron-right mx-2" style="color: rgba(255,255,255,0.6);"></i>
+                            <span style="color: white; font-weight: 600;">@Model.Name</span>
+                        </div>
+                    </nav>
+                    
+                    <!-- Place Meta Badges -->
+                    <div class="hero-meta mb-4" style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                        @if (Model.Category != null)
+                        {
+                            <div class="hero-badge" style="background: rgba(102,126,234,0.2); backdrop-filter: blur(15px); border: 1px solid rgba(102,126,234,0.4); border-radius: 20px; padding: 8px 20px; display: flex; align-items: center; font-size: 13px; font-weight: 600;">
+                                <i class="bi bi-tag me-2" style="color: #667eea;"></i>
+                                <span style="color: white;">@Model.Category.Name</span>
+                            </div>
+                        }
+                        
+                        @if (Model.Region != null)
+                        {
+                            <div class="hero-badge" style="background: rgba(118,75,162,0.2); backdrop-filter: blur(15px); border: 1px solid rgba(118,75,162,0.4); border-radius: 20px; padding: 8px 20px; display: flex; align-items: center; font-size: 13px; font-weight: 600;">
+                                <i class="bi bi-pin-map me-2" style="color: #764ba2;"></i>
+                                <span style="color: white;">@Model.Region.Name</span>
+                            </div>
+                        }
+                        
+                        <div class="hero-badge" style="background: rgba(255,215,0,0.2); backdrop-filter: blur(15px); border: 1px solid rgba(255,215,0,0.4); border-radius: 20px; padding: 8px 20px; display: flex; align-items: center; font-size: 13px; font-weight: 600;">
+                            <i class="bi bi-star-fill me-2" style="color: #ffd700;"></i>
+                            <span style="color: white;">@avgRating.ToString("0.0") (@ratingCount đánh giá)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Title -->
+                    <h1 class="hero-title mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 4rem; font-weight: 900; color: white; text-shadow: 3px 3px 6px rgba(0,0,0,0.7); line-height: 1.1; letter-spacing: -2px; margin-bottom: 30px;">
+                        @Model.Name
+                    </h1>
+                    
+                    <!-- Hero Action Buttons -->
+                    <div class="hero-actions" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                        <form asp-controller="Favorite" asp-action="Add" method="post" style="display: inline;">
+                            <input type="hidden" name="touristPlaceId" value="@Model.Id" />
+                            <button type="submit" class="btn hero-action-btn" 
+                                    style="background: linear-gradient(135deg, #ff6b9d, #ff8e53); color: white; border: none; border-radius: 25px; padding: 18px 35px; font-weight: 700; font-size: 16px; box-shadow: 0 15px 35px rgba(255,107,157,0.4); transition: all 0.4s ease; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                <i class="bi bi-heart-fill me-2"></i>Thêm vào yêu thích
+                            </button>
+                        </form>
+                        <button class="btn hero-action-btn" onclick="sharePlace()" 
+                                style="background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 25px; padding: 18px 35px; font-weight: 700; font-size: 16px; transition: all 0.4s ease; font-family: 'Plus Jakarta Sans', sans-serif;">
+                            <i class="bi bi-share-fill me-2"></i>Chia sẻ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator" style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 4; animation: bounce 2s infinite;">
+        <div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+            <i class="bi bi-chevron-down" style="color: white; font-size: 20px;"></i>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content Section -->
+<section id="place-content" style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%); color: white; min-height: 100vh; padding: 80px 0 40px 0; font-family: 'Plus Jakarta Sans', sans-serif; position: relative; overflow: hidden;">
+    <!-- Background Festive Effects -->
+    <div class="festive-bg-effects">
+        <div class="festive-grain festive-grain-1"></div>
+        <div class="festive-grain festive-grain-2"></div>
+        <div class="festive-grain festive-grain-3"></div>
+    </div>
+    
+    <div class="container">
+        <div class="row">
+            <!-- Main Content Column (70%) -->
+            <div class="col-lg-8">
+                <!-- Image Gallery Card -->
+                @if (allImages.Count > 1)
+                {
+                    <div class="content-card glassmorphism-card mb-5">
+                        <h3 class="card-title">
+                            <i class="bi bi-images me-3"></i>Thư viện hình ảnh
+                        </h3>
+                        <div class="image-carousel-container">
+                            <div id="placeImagesCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+                                <div class="carousel-indicators">
+                                    @for (int i = 0; i < allImages.Count; i++)
+                                    {
+                                        <button type="button" data-bs-target="#placeImagesCarousel" data-bs-slide-to="@i" 
+                                                class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @(i + 1)"></button>
+                                    }
+                                </div>
+                                <div class="carousel-inner">
+                                    @for (int i = 0; i < allImages.Count; i++)
+                                    {
+                                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                                            @{
+                                                var imageUrl = allImages[i].StartsWith("~") ? Url.Content(allImages[i]) : 
+                                                              allImages[i].Contains("/") ? allImages[i] : 
+                                                              Url.Content($"~/Images/{System.IO.Path.GetFileName(allImages[i])}");
+                                            }
+                                            <img src="@imageUrl" alt="@Model.Name - Hình @(i + 1)" class="carousel-image">
+                                        </div>
+                                    }
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#placeImagesCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#placeImagesCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Description Card -->
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="content-card glassmorphism-card mb-5">
+                        <h3 class="card-title">
+                            <i class="bi bi-info-circle-fill me-3"></i>Giới thiệu địa điểm
+                        </h3>
+                        <div class="card-content">
+                            <p class="description-text">@Model.Description</p>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Detailed Information Card -->
+                <div class="content-card glassmorphism-card mb-5">
+                    <h3 class="card-title">
+                        <i class="bi bi-list-ul me-3"></i>Thông tin chi tiết
+                    </h3>
+                    <div class="card-content">
+                        <div class="info-grid">
+                            @if (Model.Category != null)
+                            {
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="bi bi-tag-fill"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <div class="info-label">Danh mục</div>
+                                        <div class="info-value">@Model.Category.Name</div>
+                                    </div>
+                                </div>
+                            }
+                            
+                            @if (Model.Region != null)
+                            {
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <div class="info-label">Khu vực</div>
+                                        <div class="info-value">@Model.Region.Name</div>
+                                    </div>
+                                </div>
+                            }
+                            
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                                <div class="info-content">
+                                    <div class="info-label">Đánh giá</div>
+                                    <div class="info-value">@avgRating.ToString("0.0")/5.0 (@ratingCount lượt)</div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="bi bi-eye-fill"></i>
+                                </div>
+                                <div class="info-content">
+                                    <div class="info-label">Lượt xem</div>
+                                    <div class="info-value">@((new Random().Next(500, 2000)).ToString("N0"))</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rating Section Card -->
+                <div class="content-card glassmorphism-card">
+                    <h3 class="card-title">
+                        <i class="bi bi-star-fill me-3"></i>Đánh giá địa điểm
+                    </h3>
+                    <div class="card-content">
+                        <!-- Current Rating Display -->
+                        <div class="current-rating mb-4">
+                            <div class="rating-display">
+                                <div class="rating-stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= rounded)
+                                        {
+                                            <i class="fa-solid fa-star"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fa-regular fa-star"></i>
+                                        }
+                                    }
+                                </div>
+                                <div class="rating-text">
+                                    <span class="rating-score">@avgRating.ToString("0.0")</span>
+                                    <span class="rating-total">/5.0</span>
+                                    <span class="rating-count">(@ratingCount đánh giá)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Interactive Rating -->
+                        <div class="interactive-rating">
+                            <h4 class="rating-subtitle">Đánh giá của bạn</h4>
+                            @if (SignInManager.IsSignedIn(User))
+                            {
+                                <form id="form-rating" asp-controller="TouristPlace" asp-action="Rate" method="post">
+                                    <input type="hidden" name="touristPlaceId" value="@Model.Id" />
+                                    <input type="hidden" name="rating" id="ratingInput" value="0" />
+                                    <div class="rating-form">
+                                        <div id="starRating" class="interactive-stars">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="fa-regular fa-star star-interactive" data-value="@i"></i>
+                                            }
+                                        </div>
+                                        <button type="submit" class="btn rating-submit-btn">
+                                            <i class="bi bi-send-fill me-2"></i>Gửi đánh giá
+                                        </button>
+                                    </div>
+                                </form>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info" role="alert">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <a href="/Identity/Account/Login" class="alert-link">Đăng nhập</a> để đánh giá địa điểm này
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar Column (30%) -->
+            <div class="col-lg-4">
+                <div class="sidebar-sticky">
+                    <!-- Quick Actions Card -->
+                    <div class="sidebar-card glassmorphism-card mb-4">
+                        <h4 class="sidebar-title">
+                            <i class="bi bi-lightning-fill me-2"></i>Hành động nhanh
+                        </h4>
+                        <div class="action-buttons">
+                            <form asp-controller="Favorite" asp-action="Add" method="post" class="mb-3">
+                                <input type="hidden" name="touristPlaceId" value="@Model.Id" />
+                                <button type="submit" class="btn action-btn primary-btn w-100">
+                                    <i class="bi bi-heart-fill me-2"></i>Yêu thích
+                                </button>
+                            </form>
+                            <button class="btn action-btn secondary-btn w-100 mb-3" onclick="sharePlace()">
+                                <i class="bi bi-share-fill me-2"></i>Chia sẻ
+                            </button>
+                            <button class="btn action-btn secondary-btn w-100" onclick="window.print()">
+                                <i class="bi bi-printer-fill me-2"></i>In thông tin
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistics Card -->
+                    <div class="sidebar-card glassmorphism-card">
+                        <h4 class="sidebar-title">
+                            <i class="bi bi-graph-up me-2"></i>Thống kê xã hội
+                        </h4>
+                        <div class="stats-list">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="bi bi-eye-fill"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Lượt xem</div>
+                                    <div class="stat-value">@((new Random().Next(500, 2000)).ToString("N0"))</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="bi bi-heart-fill"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Yêu thích</div>
+                                    <div class="stat-value">@((new Random().Next(50, 300)).ToString("N0"))</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Đánh giá</div>
+                                    <div class="stat-value">@ratingCount</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Location Map Card -->
+                    <div class="sidebar-card glassmorphism-card mt-4">
+                        <h4 class="sidebar-title">
+                            <i class="bi bi-geo-alt-fill me-2"></i>Vị trí địa điểm
+                        </h4>
+                        <div class="map-container">
+                            <!-- Interactive OpenStreetMap -->
+                            <div id="miniMap" class="mini-map-wrapper" style="position: relative; border-radius: 20px; overflow: hidden; height: 250px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
+                                <!-- Map will be initialized here by Leaflet -->
+                            </div>
+                            
+                            <!-- Map Actions -->
+                            <div class="map-actions mt-3">
+                                <div class="d-flex gap-2">
+                                    <button class="btn map-action-btn flex-fill" onclick="openInGoogleMaps()" 
+                                            style="background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px 15px; font-size: 13px; font-weight: 600; transition: all 0.3s ease;">
+                                        <i class="bi bi-map me-1"></i>Google Maps
+                                    </button>
+                                    <button class="btn map-action-btn flex-fill" onclick="getDirections()" 
+                                            style="background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark)); color: white; border: none; border-radius: 12px; padding: 10px 15px; font-size: 13px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(102,126,234,0.3);">
+                                        <i class="bi bi-navigation me-1"></i>Chỉ đường
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Location Info -->
+                            @if (Model.Region != null)
+                            {
+                                <div class="location-info mt-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 15px;">
+                                    <div class="d-flex align-items-center">
+                                        <div class="location-icon" style="width: 35px; height: 35px; background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                            <i class="bi bi-pin-map-fill" style="color: white; font-size: 14px;"></i>
+                                        </div>
+                                        <div class="location-details">
+                                            <div class="location-name" style="color: var(--text-primary); font-weight: 600; font-size: 14px; margin-bottom: 2px;">@Model.Region.Name</div>
+                                            <div class="location-type" style="color: var(--text-muted); font-size: 12px;">Khu vực du lịch</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Review Content (Full Width) -->
+        @if (!string.IsNullOrEmpty(Model.ReviewContent))
+        {
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="content-card glassmorphism-card">
+                        <h3 class="card-title">
+                            <i class="bi bi-chat-square-text-fill me-3"></i>Đánh giá chi tiết
+                        </h3>
+                        <div class="card-content">
+                            <div class="review-content">
+                                @Html.Raw(Model.ReviewContent)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<style>
+    /* Modern CSS Variables */
+    :root {
+        --primary-purple: #667eea;
+        --primary-purple-dark: #764ba2;
+        --accent-pink: #f093fb;
+        --accent-orange: #ff8e53;
+        --accent-red: #ff6b9d;
+        --accent-gold: #ffd700;
+        --glass-bg: rgba(255,255,255,0.05);
+        --glass-border: rgba(255,255,255,0.1);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255,255,255,0.8);
+        --text-muted: rgba(255,255,255,0.6);
+        --shadow-light: 0 15px 35px rgba(0,0,0,0.3);
+        --shadow-heavy: 0 25px 50px rgba(0,0,0,0.4);
+        --blur-light: blur(15px);
+        --blur-heavy: blur(25px);
+        --radius-sm: 15px;
+        --radius-md: 20px;
+        --radius-lg: 25px;
+        --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* Hero Banner Styles */
+    .hero-banner {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .hero-badge {
+        transition: var(--transition-smooth);
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .hero-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .hero-title {
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .hero-actions {
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .hero-action-btn {
+        transition: var(--transition-smooth);
+    }
+
+    .hero-action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 40px rgba(255,107,157,0.6) !important;
+    }
+
+    /* Festive Spotlight Effects */
+    .festive-spotlight-bg {
+        overflow: hidden;
+    }
+
+    .spotlight-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.15;
+        animation: spotlightMove 20s ease-in-out infinite;
+    }
+
+    .spotlight-orb-1 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(102,126,234,0.4) 0%, transparent 70%);
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .spotlight-orb-2 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(240,147,251,0.3) 0%, transparent 70%);
+        top: 60%;
+        right: 15%;
+        animation-delay: 5s;
+    }
+
+    .spotlight-orb-3 {
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 10s;
+    }
+
+    .spotlight-orb-4 {
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(255,107,157,0.25) 0%, transparent 70%);
+        top: 30%;
+        left: 50%;
+        animation-delay: 15s;
+    }
+
+    /* Festive Background Effects */
+    .festive-bg-effects {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .festive-grain {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.08;
+        animation: festiveFloat 25s ease-in-out infinite;
+    }
+
+    .festive-grain-1 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(102,126,234,0.1) 0%, transparent 70%);
+        top: 15%;
+        right: 10%;
+        animation-delay: 0s;
+    }
+
+    .festive-grain-2 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(240,147,251,0.08) 0%, transparent 70%);
+        bottom: 25%;
+        left: 15%;
+        animation-delay: 8s;
+    }
+
+    .festive-grain-3 {
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(255,215,0,0.06) 0%, transparent 70%);
+        top: 50%;
+        left: 45%;
+        animation-delay: 16s;
+    }
+
+    /* Glassmorphism Cards */
+    .glassmorphism-card {
+        background: var(--glass-bg);
+        backdrop-filter: var(--blur-heavy);
+        -webkit-backdrop-filter: var(--blur-heavy);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 40px;
+        box-shadow: var(--shadow-light);
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glassmorphism-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102,126,234,0.03), rgba(240,147,251,0.02));
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+        pointer-events: none;
+    }
+
+    .glassmorphism-card:hover::before {
+        opacity: 1;
+    }
+
+    .glassmorphism-card:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.15);
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 30px rgba(102,126,234,0.1);
+    }
+
+    /* Content Cards */
+    .content-card {
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .card-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+    }
+
+    .card-title i {
+        color: var(--primary-purple);
+        font-size: 20px;
+    }
+
+    .card-content {
+        color: var(--text-secondary);
+        font-size: 16px;
+        line-height: 1.8;
+    }
+
+    .description-text {
+        text-align: justify;
+        margin: 0;
+    }
+
+    /* Image Carousel */
+    .image-carousel-container {
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        height: 400px;
+        box-shadow: var(--shadow-heavy);
+    }
+
+    .carousel-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+    }
+
+    .carousel-indicators button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.5);
+        border: 2px solid rgba(255,255,255,0.8);
+        margin: 0 5px;
+        transition: var(--transition-smooth);
+    }
+
+    .carousel-indicators button.active {
+        background: var(--accent-gold);
+        border-color: var(--accent-gold);
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        background: rgba(0,0,0,0.3);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: var(--transition-smooth);
+    }
+
+    .carousel-control-prev {
+        left: 20px;
+    }
+
+    .carousel-control-next {
+        right: 20px;
+    }
+
+    .carousel-control-prev:hover,
+    .carousel-control-next:hover {
+        background: rgba(0,0,0,0.6);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    /* Info Grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: var(--radius-sm);
+        transition: var(--transition-smooth);
+    }
+
+    .info-item:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.15);
+        transform: translateY(-2px);
+    }
+
+    .info-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .info-icon i {
+        color: white;
+        font-size: 18px;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        font-size: 16px;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    /* Rating Styles */
+    .current-rating {
+        text-align: center;
+        padding: 30px;
+        background: rgba(255,255,255,0.03);
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .rating-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .rating-stars {
+        font-size: 32px;
+    }
+
+    .rating-stars i {
+        color: var(--accent-gold);
+        margin: 0 3px;
+    }
+
+    .rating-text {
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
+    }
+
+    .rating-score {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .rating-total {
+        font-size: 18px;
+        color: var(--text-muted);
+    }
+
+    .rating-count {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-left: 10px;
+    }
+
+    .interactive-rating {
+        margin-top: 30px;
+    }
+
+    .rating-subtitle {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+    }
+
+    .rating-form {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .interactive-stars {
+        cursor: pointer;
+        font-size: 28px;
+    }
+
+    .star-interactive {
+        color: rgba(255,255,255,0.3);
+        transition: var(--transition-smooth);
+        margin: 0 3px;
+    }
+
+    .star-interactive:hover,
+    .star-interactive.active {
+        color: var(--accent-gold);
+        transform: scale(1.1);
+    }
+
+    .rating-submit-btn {
+        background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark));
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        padding: 15px 30px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: var(--transition-smooth);
+        box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+    }
+
+    .rating-submit-btn:hover {
+        background: linear-gradient(135deg, var(--primary-purple-dark), var(--accent-pink));
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(102,126,234,0.6);
+    }
+
+    /* Sidebar Styles */
+    .sidebar-sticky {
+        position: sticky;
+        top: 100px;
+    }
+
+    .sidebar-card {
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    .sidebar-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar-title i {
+        color: var(--primary-purple);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .action-btn {
+        border-radius: var(--radius-sm);
+        padding: 15px 20px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: var(--transition-smooth);
+        border: none;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .primary-btn {
+        background: linear-gradient(135deg, var(--accent-red), var(--accent-orange));
+        color: white;
+        box-shadow: 0 8px 25px rgba(255,107,157,0.4);
+    }
+
+    .primary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(255,107,157,0.6);
+    }
+
+    .secondary-btn {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .secondary-btn:hover {
+        background: rgba(255,255,255,0.15);
+        border-color: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Statistics */
+    .stats-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: var(--radius-sm);
+        transition: var(--transition-smooth);
+    }
+
+    .stat-item:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.15);
+        transform: translateY(-2px);
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .stat-item:nth-child(1) .stat-icon {
+        background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark));
+    }
+
+    .stat-item:nth-child(2) .stat-icon {
+        background: linear-gradient(135deg, var(--accent-red), var(--accent-orange));
+    }
+
+    .stat-item:nth-child(3) .stat-icon {
+        background: linear-gradient(135deg, var(--accent-gold), #ffb347);
+    }
+
+    .stat-icon i {
+        color: white;
+        font-size: 16px;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+        color: var(--text-primary);
+        font-weight: 700;
+    }
+
+    /* Map Styles */
+    .mini-map-wrapper {
+        transition: var(--transition-smooth);
+        position: relative;
+    }
+
+    .mini-map-wrapper:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    }
+
+    /* Leaflet Dark Theme Customization */
+    #miniMap .leaflet-tile-pane {
+        filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+    }
+
+    #miniMap .leaflet-control-container {
+        filter: brightness(0.8) invert(1) contrast(2);
+    }
+
+    #miniMap .leaflet-popup-content-wrapper {
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 10px;
+    }
+
+    #miniMap .leaflet-popup-tip {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    /* Custom Marker Styles */
+    .custom-marker {
+        background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark));
+        width: 30px;
+        height: 30px;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        border: 3px solid white;
+        box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+
+    .custom-marker::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(45deg);
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+    }
+
+    .map-action-btn {
+        transition: var(--transition-smooth);
+    }
+
+    .map-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102,126,234,0.4) !important;
+    }
+
+    .location-info {
+        transition: var(--transition-smooth);
+    }
+
+    .location-info:hover {
+        background: rgba(255,255,255,0.08) !important;
+        border-color: rgba(255,255,255,0.15) !important;
+        transform: translateY(-1px);
+    }
+
+    /* Review Content */
+    .review-content {
+        color: var(--text-secondary);
+        font-size: 16px;
+        line-height: 1.8;
+        text-align: justify;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-nav {
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .breadcrumb-container {
+        transition: var(--transition-smooth);
+    }
+
+    .breadcrumb-container:hover {
+        background: rgba(255,255,255,0.15);
+        border-color: rgba(255,255,255,0.3);
+    }
+
+    /* Scroll Indicator */
+    .scroll-indicator {
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+    .scroll-indicator:hover {
+        transform: translateX(-50%) translateY(-5px);
+    }
+
+    /* Animations */
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateX(-50%) translateY(0);
+        }
+        40% {
+            transform: translateX(-50%) translateY(-10px);
+        }
+        60% {
+            transform: translateX(-50%) translateY(-5px);
+        }
+    }
+
+    @@keyframes spotlightMove {
+        0%, 100% { 
+            transform: translateX(0px) translateY(0px) scale(1);
+            opacity: 0.15;
+        }
+        25% { 
+            transform: translateX(30px) translateY(-20px) scale(1.1);
+            opacity: 0.25;
+        }
+        50% { 
+            transform: translateX(-20px) translateY(25px) scale(0.9);
+            opacity: 0.1;
+        }
+        75% { 
+            transform: translateX(25px) translateY(-10px) scale(1.05);
+            opacity: 0.2;
+        }
+    }
+
+    @@keyframes festiveFloat {
+        0%, 100% { 
+            transform: translateX(0px) translateY(0px) rotate(0deg);
+            opacity: 0.08;
+        }
+        25% { 
+            transform: translateX(20px) translateY(-15px) rotate(90deg);
+            opacity: 0.12;
+        }
+        50% { 
+            transform: translateX(-15px) translateY(20px) rotate(180deg);
+            opacity: 0.06;
+        }
+        75% { 
+            transform: translateX(18px) translateY(-8px) rotate(270deg);
+            opacity: 0.1;
+        }
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 992px) {
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            margin-top: 40px;
+        }
+
+        .hero-title {
+            font-size: 3rem !important;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rating-form {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+        }
+
+        .interactive-stars {
+            text-align: center;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .hero-banner {
+            padding-top: 60px;
+        }
+
+        .hero-title {
+            font-size: 2.5rem !important;
+        }
+
+        .hero-meta {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-actions {
+            flex-direction: column;
+            align-items: stretch;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .glassmorphism-card {
+            padding: 25px;
+        }
+
+        .card-title {
+            font-size: 20px;
+        }
+
+        .image-carousel-container {
+            height: 250px;
+        }
+
+        .carousel-image {
+            height: 250px;
+        }
+
+        .current-rating {
+            padding: 20px;
+        }
+
+        .rating-stars {
+            font-size: 24px;
+        }
+
+        .rating-score {
+            font-size: 24px;
+        }
+
+        .interactive-stars {
+            font-size: 24px;
+        }
+
+        .festive-grain,
+        .spotlight-orb {
+            display: none;
+        }
+
+        .mini-map-wrapper {
+            height: 200px !important;
+        }
+
+        .map-actions .d-flex {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .location-info {
+            padding: 12px !important;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .breadcrumb-container {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .hero-title {
+            font-size: 2rem !important;
+        }
+
+        .scroll-indicator {
+            bottom: 20px;
+        }
+
+        .scroll-indicator div {
+            width: 40px;
+            height: 40px;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initialize OpenStreetMap with Leaflet
+            initializeMiniMap();
+            
+            // Interactive Star Rating
+            const stars = document.querySelectorAll('.star-interactive');
+            const ratingInput = document.getElementById('ratingInput');
+            let currentRating = 0;
+
+            stars.forEach((star, index) => {
+                star.addEventListener('mouseenter', function() {
+                    highlightStars(index + 1);
+                });
+
+                star.addEventListener('mouseleave', function() {
+                    highlightStars(currentRating);
+                });
+
+                star.addEventListener('click', function() {
+                    currentRating = index + 1;
+                    ratingInput.value = currentRating;
+                    highlightStars(currentRating);
+                });
+            });
+
+            function highlightStars(rating) {
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('fa-regular');
+                        star.classList.add('fa-solid', 'active');
+                    } else {
+                        star.classList.remove('fa-solid', 'active');
+                        star.classList.add('fa-regular');
+                    }
+                });
+            }
+
+            // Rating Form Submission
+            const ratingForm = document.getElementById('form-rating');
+            if (ratingForm) {
+                ratingForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    if (currentRating === 0) {
+                        showNotification('Vui lòng chọn số sao đánh giá!', 'warning');
+                        return;
+                    }
+
+                    try {
+                        const formData = new FormData(this);
+                        const response = await fetch(this.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                            }
+                        });
+
+                        if (response.ok) {
+                            showNotification('Cảm ơn bạn đã đánh giá!', 'success');
+                            // Reset form
+                            currentRating = 0;
+                            ratingInput.value = 0;
+                            highlightStars(0);
+                        } else {
+                            showNotification('Có lỗi xảy ra. Vui lòng thử lại!', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Rating error:', error);
+                        showNotification('Có lỗi xảy ra. Vui lòng thử lại!', 'error');
+                    }
+                });
+            }
+
+            // Smooth Scroll for Scroll Indicator
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            if (scrollIndicator) {
+                scrollIndicator.addEventListener('click', function() {
+                    document.getElementById('place-content').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            }
+
+            // Parallax Effect for Hero Background
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const heroBackground = document.querySelector('.hero-bg');
+                if (heroBackground) {
+                    heroBackground.style.transform = `translateY(${scrolled * 0.5}px)`;
+                }
+            });
+
+            // Image Gallery Enhancement
+            const carouselImages = document.querySelectorAll('.carousel-image');
+            carouselImages.forEach(img => {
+                img.addEventListener('error', function() {
+                    this.style.display = 'none';
+                    // Create fallback placeholder
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'image-placeholder';
+                    placeholder.style.cssText = `
+                        width: 100%; 
+                        height: 400px; 
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); 
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center;
+                    `;
+                    placeholder.innerHTML = `
+                        <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border-radius: 25px; padding: 40px; border: 1px solid rgba(255,255,255,0.2);">
+                            <i class="bi bi-geo-alt" style="font-size: 80px; color: rgba(255,255,255,0.9);"></i>
+                        </div>
+                    `;
+                    this.parentNode.appendChild(placeholder);
+                });
+            });
+        });
+
+        // Initialize Mini Map with OpenStreetMap
+        let miniMap;
+        function initializeMiniMap() {
+            try {
+                // Default coordinates for Đà Lạt
+                const defaultLat = 11.9404;
+                const defaultLng = 108.4583;
+                
+                // Initialize map
+                miniMap = L.map('miniMap', {
+                    zoomControl: false,
+                    attributionControl: false,
+                    scrollWheelZoom: false,
+                    doubleClickZoom: false,
+                    dragging: false,
+                    touchZoom: false,
+                    boxZoom: false,
+                    keyboard: false
+                }).setView([defaultLat, defaultLng], 15);
+
+                // Add dark theme tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(miniMap);
+
+                // Create custom marker
+                const customIcon = L.divIcon({
+                    className: 'custom-marker',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30],
+                    popupAnchor: [0, -30]
+                });
+
+                // Add marker for the place
+                const marker = L.marker([defaultLat, defaultLng], { icon: customIcon }).addTo(miniMap);
+                
+                // Add popup with place name
+                marker.bindPopup(`
+                    <div style="text-align: center; padding: 5px;">
+                        <strong style="color: white;">@Html.Raw(Model.Name.Replace("'", "\\'"))</strong><br>
+                        <small style="color: rgba(255,255,255,0.8);">@(Model.Region?.Name ?? "Đà Lạt")</small>
+                    </div>
+                `);
+
+                // Try to geocode the place name for more accurate location
+                geocodePlace('@Html.Raw(Model.Name.Replace("'", "\\'"))');
+                
+            } catch (error) {
+                console.error('Error initializing map:', error);
+            }
+        }
+
+        // Geocode place name to get accurate coordinates
+        async function geocodePlace(placeName) {
+            try {
+                const query = encodeURIComponent(placeName + ' Đà Lạt Vietnam');
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lng = parseFloat(data[0].lon);
+                    
+                    // Update map view and marker position
+                    miniMap.setView([lat, lng], 15);
+                    
+                    // Clear existing markers and add new one
+                    miniMap.eachLayer(function(layer) {
+                        if (layer instanceof L.Marker) {
+                            miniMap.removeLayer(layer);
+                        }
+                    });
+                    
+                    const customIcon = L.divIcon({
+                        className: 'custom-marker',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 30],
+                        popupAnchor: [0, -30]
+                    });
+                    
+                    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(miniMap);
+                    marker.bindPopup(`
+                        <div style="text-align: center; padding: 5px;">
+                            <strong style="color: white;">@Html.Raw(Model.Name.Replace("'", "\\'"))</strong><br>
+                            <small style="color: rgba(255,255,255,0.8);">@(Model.Region?.Name ?? "Đà Lạt")</small>
+                        </div>
+                    `);
+                }
+            } catch (error) {
+                console.error('Geocoding error:', error);
+            }
+        }
+
+        // Share Function
+        function sharePlace() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '@Model.Name',
+                    text: 'Khám phá địa điểm tuyệt vời này tại Đà Lạt!',
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                // Fallback: Copy to clipboard
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    showNotification('Đã sao chép liên kết!', 'success');
+                }).catch(() => {
+                    showNotification('Không thể sao chép liên kết!', 'error');
+                });
+            }
+        }
+
+        // Map Functions
+        function openInGoogleMaps() {
+            const placeName = '@Html.Raw(Model.Name.Replace("'", "\\'"))';
+            const searchQuery = encodeURIComponent(placeName + ' Đà Lạt');
+            const googleMapsUrl = `https://www.google.com/maps/search/${searchQuery}`;
+            window.open(googleMapsUrl, '_blank');
+        }
+
+        function getDirections() {
+            const placeName = '@Html.Raw(Model.Name.Replace("'", "\\'"))';
+            const searchQuery = encodeURIComponent(placeName + ' Đà Lạt');
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const directionsUrl = `https://www.google.com/maps/dir/${lat},${lng}/${searchQuery}`;
+                        window.open(directionsUrl, '_blank');
+                    },
+                    function(error) {
+                        // Fallback: Open directions without current location
+                        const directionsUrl = `https://www.google.com/maps/dir//${searchQuery}`;
+                        window.open(directionsUrl, '_blank');
+                    }
+                );
+            } else {
+                // Fallback: Open directions without current location
+                const directionsUrl = `https://www.google.com/maps/dir//${searchQuery}`;
+                window.open(directionsUrl, '_blank');
+            }
+        }
+
+        // Notification System
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(n => n.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                            type === 'error' ? 'linear-gradient(135deg, #f44336, #da190b)' : 
+                            type === 'warning' ? 'linear-gradient(135deg, #ff9800, #f57c00)' : 
+                            'linear-gradient(135deg, #2196F3, #0b7dda)'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 25px;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+                backdrop-filter: blur(15px);
+                z-index: 9998;
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-weight: 600;
+                font-size: 14px;
+                transform: translateX(400px);
+                transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                max-width: 300px;
+            `;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Auto remove
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    notification.remove();
+                }, 400);
+            }, 3000);
+        }
+
+        // Enhanced Form Submissions
+        document.querySelectorAll('form[asp-controller="Favorite"]').forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                try {
+                    const formData = new FormData(this);
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                        }
+                    });
+
+                    if (response.ok) {
+                        showNotification('Đã thêm vào danh sách yêu thích!', 'success');
+                        // Update button state
+                        const button = this.querySelector('button');
+                        button.innerHTML = '<i class="bi bi-heart-fill me-2"></i>Đã yêu thích';
+                        button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                    } else {
+                        showNotification('Có lỗi xảy ra. Vui lòng thử lại!', 'error');
+                    }
+                } catch (error) {
+                    console.error('Favorite error:', error);
+                    showNotification('Có lỗi xảy ra. Vui lòng thử lại!', 'error');
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,252 @@
+﻿/* ======= CẤU TRÚC TOÀN TRANG ======= */
+
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ======= HEADER & NAVBAR ======= */
+
+
+
+header {
+    height: 75px;
+    background-color: #ffcc00;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 15px;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    flex-shrink: 0;
+}
+
+    header .navbar-brand {
+        font-size: 1.9rem;
+        font-weight: bold;
+    }
+
+    header .navbar-nav {
+        display: flex;
+        justify-content: space-evenly;
+    }
+
+        header .navbar-nav .nav-item {
+            margin-right: 15px;
+            white-space: nowrap;
+        }
+
+.navbar-nav .nav-link {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white !important;
+    text-decoration: none;
+}
+
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link:focus {
+        color: #ff0000 !important;
+    }
+
+    /* Tên người dùng */
+    .navbar-nav .nav-link.user-name {
+        color: #1E90FF !important;
+        font-weight: bold !important;
+        font-size: 1.3rem !important;
+    }
+
+/* Dropdown hover tự mở */
+.nav-item.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.nav-item.dropdown .admin-link {
+    color: red !important;
+}
+
+/* ======= TÌM KIẾM ======= */
+
+.box {
+    position: relative;
+    flex-grow: 1;
+}
+
+body.has-fixed-header {
+    padding-top: 60px; /* hoặc 70px nếu header dày hơn */
+}
+
+
+/* Bo tròn góc Banner */
+.slide-item {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.input {
+    padding: 10px;
+    width: 100%;
+    background: #3b3640;
+    border: 2px solid #FFFFFF;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 15px;
+    color: #FFFFFF;
+    outline: none;
+}
+
+.box i {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: #FFFFFF;
+}
+
+
+main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* ======= CONTAINER CHUNG ======= */
+
+.container {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* ======= BANNER ======= */
+
+
+
+
+
+/* ======= CAROUSEL ======= */
+
+.carousel-item {
+    width: 100%;
+    max-width: 2000px;
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+    .carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+/* ======= CARD & HOVER ======= */
+
+.card {
+    min-height: 300px;
+}
+
+.inner-box {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.image-box img {
+    transition: transform 0.3s ease;
+}
+
+.inner-box:hover img {
+    transform: scale(1.1);
+}
+
+.overlay-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0,0,0,0.6);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.inner-box:hover .overlay-box {
+    opacity: 1;
+}
+
+.overlay-inner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ======= FOCUS (Bootstrap override) ======= */
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+
+/* Ẩn mũi tên tăng giảm trên input number */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield; /* Firefox */
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+    color: white;
+}
+
+
+html, body {
+    height: 100%;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+    main > .blog-section {
+        flex: 1;
+    }
+
+
+footer.footer {
+    margin-top: 50px; /* hoặc px tuỳ ý */
+}

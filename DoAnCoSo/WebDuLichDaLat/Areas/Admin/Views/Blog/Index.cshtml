@@ -1,0 +1,36 @@
+﻿@model IEnumerable<WebDuLichDaLat.Models.BlogPost>
+
+@{
+    ViewData["Title"] = "Quản lý Blog";
+}
+
+<h2>Danh sách bài viết</h2>
+
+<p>
+    <a class="btn btn-success" asp-action="Create">Thêm mới bài viết</a>
+</p>
+
+
+<table class="table table-bordered text-white">
+
+    <thead>
+        <tr>
+            <th>Tiêu đề</th>
+            <th>Ngày đăng</th>
+            <th>Tác vụ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var post in Model)
+        {
+            <tr>
+                <td>@post.Title</td>
+                <td>@post.PostedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@post.Id">Sửa</a>
+                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@post.Id">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,36 @@
+@{
+    var title = ViewBag.HeroTitle as string ?? "Đà Lạt";
+    var tagline = ViewBag.HeroTagline as string ?? "Pixel perfect design with awesome contents";
+    var buttonText = ViewBag.HeroButtonText as string ?? "KHÁM PHÁ NGAY";
+    var buttonLink = ViewBag.HeroButtonLink as string ?? Url.Action("Index", "TripPlanner");
+    var backgroundImage = ViewBag.HeroBackgroundImage as string ?? "/Images/hero-dalat.jpg";
+    var height = ViewBag.HeroHeight as string ?? "600px";
+}
+
+<!-- Hero Section -->
+<section class="hero-section position-relative" style="height: @height; overflow: hidden; margin-top: 0; margin-bottom: 0; padding-bottom: 0;">
+    <div class="hero-background position-absolute w-100 h-100" 
+         style="background-image: url('@backgroundImage'); background-size: cover; background-position: center; filter: brightness(0.7);">
+    </div>
+</section>
+
+<style>
+    .hero-section {
+        position: relative;
+    }
+
+    .hero-section .hero-background {
+        transition: transform 0.5s ease;
+    }
+
+    .hero-section:hover .hero-background {
+        transform: scale(1.05);
+    }
+
+    @@media (max-width: 768px) {
+        .hero-section {
+            height: 400px !important;
+        }
+    }
+</style>
+

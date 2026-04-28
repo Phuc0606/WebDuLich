@@ -1,0 +1,81 @@
+﻿@model List<WebDuLichDaLat.Models.Contact>
+
+@{
+    ViewData["Title"] = "Quản lý yêu cầu hỗ trợ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .table th,
+    .table td,
+    .table thead,
+    .table tbody,
+    .table-responsive,
+    .container,
+    h2,
+    .alert {
+        color: white !important;
+    }
+
+    .table {
+        background-color: transparent;
+    }
+
+    .table-bordered th,
+    .table-bordered td {
+        border-color: #ccc;
+    }
+
+    
+</style>
+
+<div class="container my-5">
+    <h2 class="text-center text-primary mb-4">📩 Danh sách yêu cầu hỗ trợ</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">Hiện chưa có yêu cầu nào.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Điện thoại</th>
+                        <th>Chủ đề</th>
+                        <th>Nội dung</th>
+                        <th>Thời gian gửi</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@Model[i].Name</td>
+                            <td>@Model[i].Email</td>
+                            <td>@Model[i].PhoneNumber</td>
+                            <td>@Model[i].Subject</td>
+                            <td>@Model[i].Message</td>
+                            <td>@Model[i].CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <form asp-action="Delete" asp-route-id="@Model[i].Id" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xoá yêu cầu này không?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i> Xoá
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    }
+</div>

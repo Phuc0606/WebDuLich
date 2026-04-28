@@ -1,0 +1,18 @@
+﻿@model WebDuLichDaLat.Models.BlogPost
+
+@{
+    ViewData["Title"] = "Xóa bài viết";
+}
+
+<h2>Bạn có chắc muốn xóa bài viết?</h2>
+
+<div>
+    <h4>@Model.Title</h4>
+    <p class="text-white">@Model.PostedDate.ToString("dd/MM/yyyy HH:mm")</p>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

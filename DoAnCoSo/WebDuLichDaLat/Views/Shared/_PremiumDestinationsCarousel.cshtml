@@ -1,0 +1,222 @@
+@model List<WebDuLichDaLat.Models.TouristPlace>
+@using System.Globalization
+
+@{
+    var viCulture = new CultureInfo("vi-VN");
+    var displayPlaces = Model?.Take(8) ?? new List<WebDuLichDaLat.Models.TouristPlace>();
+    
+    // Helper functions
+    string GetImageUrl(string imageUrl)
+    {
+        if (string.IsNullOrEmpty(imageUrl))
+            return GetFallbackImage();
+        
+        if (imageUrl.StartsWith("http"))
+            return imageUrl;
+        
+        if (imageUrl.StartsWith("~"))
+            return Url.Content(imageUrl);
+        
+        return $"/Images/{System.IO.Path.GetFileName(imageUrl)}";
+    }
+    
+    string GetFallbackImage()
+    {
+        var images = new[]
+        {
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1501436513145-30f24e19fcc4?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop&crop=center"
+        };
+        return images[new Random().Next(images.Length)];
+    }
+    
+    string GetDemoImage(int index)
+    {
+        var images = new[]
+        {
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop&crop=center", 
+            "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1501436513145-30f24e19fcc4?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop&crop=center",
+            "https://images.unsplash.com/photo-1464822759844-d150baec0494?w=800&h=600&fit=crop&crop=center"
+        };
+        return images[index % images.Length];
+    }
+    
+    string GetDemoPlaceName(int index)
+    {
+        var names = new[]
+        {
+            "Thung Lũng Tình Yêu",
+            "Hồ Xuân Hương", 
+            "Dinh Bảo Đại",
+            "Chợ Đà Lạt",
+            "Ga Đà Lạt",
+            "Thiền Viện Trúc Lâm",
+            "Đồi Chè Cầu Đất",
+            "Vườn Hoa Thành Phố"
+        };
+        return names[index % names.Length];
+    }
+    
+    string GetDemoRegion(int index)
+    {
+        var regions = new[]
+        {
+            "Phường 4",
+            "Phường 1", 
+            "Phường 2",
+            "Phường 3",
+            "Phường 5",
+            "Phường 6",
+            "Phường 7",
+            "Phường 8"
+        };
+        return regions[index % regions.Length];
+    }
+    
+    string GetRandomRating()
+    {
+        var ratings = new[] { "4.2", "4.5", "4.7", "4.8", "4.9", "5.0" };
+        return ratings[new Random().Next(ratings.Length)];
+    }
+    
+    string GetRandomViews()
+    {
+        var random = new Random();
+        return (random.Next(150, 999)).ToString();
+    }
+    
+    string GetRandomLikes()
+    {
+        var random = new Random();
+        return (random.Next(50, 200)).ToString();
+    }
+}
+
+<!-- Premium Destinations Carousel Section -->
+<section class="premium-carousel-section">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="text-center mb-5">
+            <h2 class="premium-section-title">Điểm đến phổ biến</h2>
+            <p class="premium-section-subtitle">
+                Khám phá những địa điểm được yêu thích nhất tại Đà Lạt với trải nghiệm tuyệt vời
+            </p>
+        </div>
+
+        <!-- Premium Carousel Container -->
+        <div class="premium-carousel-container">
+            <div class="premium-carousel-wrapper">
+                <div class="premium-carousel-track">
+                    @if (displayPlaces.Any())
+                    {
+                        @foreach (var place in displayPlaces)
+                        {
+                            <div class="premium-destination-card">
+                                <a href="@Url.Action("Display", "TouristPlace", new { id = place.Id })" class="text-decoration-none">
+                                    <div class="premium-card-image">
+                                        <img src="@GetImageUrl(place.ImageUrl)" 
+                                             alt="@place.Name" 
+                                             loading="lazy"
+                                             onerror="this.src='@GetFallbackImage()'">
+                                        
+                                        <div class="premium-card-overlay">
+                                            <!-- Rating Badge -->
+                                            <div class="premium-rating-badge">
+                                                <i class="bi bi-star-fill"></i>
+                                                <span>@GetRandomRating()</span>
+                                            </div>
+                                            
+                                            <!-- Title on Image -->
+                                            <h3 class="premium-card-title-overlay">@place.Name</h3>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="premium-card-content">
+                                        @if (place.Region != null)
+                                        {
+                                            <div class="premium-card-location">
+                                                <i class="bi bi-geo-alt-fill"></i>
+                                                <span>@place.Region.Name, Đà Lạt</span>
+                                            </div>
+                                        }
+                                        
+                                        <div class="premium-card-stats">
+                                            <div class="premium-stat-item">
+                                                <i class="bi bi-eye-fill"></i>
+                                                <span>@GetRandomViews() lượt xem</span>
+                                            </div>
+                                            <div class="premium-stat-item">
+                                                <i class="bi bi-heart-fill"></i>
+                                                <span>@GetRandomLikes()</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        @* Demo cards when no data available *@
+                        @for (int i = 0; i < 8; i++)
+                        {
+                            <div class="premium-destination-card">
+                                <a href="#" class="text-decoration-none">
+                                    <div class="premium-card-image">
+                                        <img src="@GetDemoImage(i)" 
+                                             alt="@GetDemoPlaceName(i)"
+                                             loading="lazy">
+                                        
+                                        <div class="premium-card-overlay">
+                                            <div class="premium-rating-badge">
+                                                <i class="bi bi-star-fill"></i>
+                                                <span>@GetRandomRating()</span>
+                                            </div>
+                                            
+                                            <h3 class="premium-card-title-overlay">@GetDemoPlaceName(i)</h3>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="premium-card-content">
+                                        <div class="premium-card-location">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                            <span>@GetDemoRegion(i), Đà Lạt</span>
+                                        </div>
+                                        
+                                        <div class="premium-card-stats">
+                                            <div class="premium-stat-item">
+                                                <i class="bi bi-eye-fill"></i>
+                                                <span>@GetRandomViews() lượt xem</span>
+                                            </div>
+                                            <div class="premium-stat-item">
+                                                <i class="bi bi-heart-fill"></i>
+                                                <span>@GetRandomLikes()</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- View All Button -->
+        <div class="text-center">
+            <a href="@Url.Action("Index", "TouristPlace")" class="premium-view-all-btn">
+                <span>Khám phá tất cả địa điểm</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>

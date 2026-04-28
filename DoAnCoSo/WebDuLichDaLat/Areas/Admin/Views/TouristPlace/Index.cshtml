@@ -1,0 +1,175 @@
+﻿@using WebDuLichDaLat.Models
+@model IEnumerable<WebDuLichDaLat.Models.TouristPlace>
+
+
+
+@{
+    var categories = ViewBag.Categories as IEnumerable<WebDuLichDaLat.Models.Category>;
+    var Regions = ViewBag.Regions as IEnumerable<WebDuLichDaLat.Models.Region>;
+    var touristPlacesList = Model?.ToList() ?? new List<WebDuLichDaLat.Models.TouristPlace>();
+    var allTouristPlaces = ViewBag.AllTouristPlaces as IEnumerable<WebDuLichDaLat.Models.TouristPlace> ?? new List<WebDuLichDaLat.Models.TouristPlace>();
+
+
+}
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".banner-carousel").owlCarousel({
+                loop: true,
+                margin: 0,
+                nav: false,
+                dots: true,
+                items: 1,
+                autoplay: true,
+                autoplayTimeout: 5000,
+                autoplayHoverPause: true,
+                navText: ["<span class='carousel-control-prev-icon'></span>", "<span class='carousel-control-next-icon'></span>"]
+            });
+        });
+    </script>
+}
+
+
+
+<!-- Banner Section -->
+<section class="banner-section" style="position: relative; width: 100%; overflow: hidden; margin-top:50px;margin-block-end: 30px;">
+    <div class="banner-carousel owl-carousel owl-theme">
+
+        <!-- Slide 1 -->
+        <a href="https://genk.vn/bi-my-gay-kho-de-trung-quoc-train-ai-kieu-moi-mang-du-lieu-sang-dong-nam-a-de-train-roi-xach-vali-o-cung-ve-nuoc-2025061512535302.chn" style="display: block; width: 100%; height: 500px;">
+            <div class="slide-item" style="position: relative; width: 100%; height: 100%; cursor: pointer;">
+                <div class="image-layer" style="
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('https://genk.mediacdn.vn/139269124445442048/2025/6/15/nvidia-ampere-a800-gpu-china-us-1749966802972-1749966803406515036086.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+"></div>
+
+                <div class="auto-container" style="position: relative; z-index: 2; color: white;">
+                    <div class="content-box text-center pt-5">
+                        <h2 style="opacity: 0;">The<br>Vn Travel</h2>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+
+
+        <!-- Slide 2 -->
+        <a href="https://genk.vn/3-thang-nua-iphone-17-pro-ra-mat-day-la-nhung-tinh-nang-nguoi-viet-mong-cho-nhat-20250615160747148.chn" style="display: block; width: 100%; height: 500px;">
+            <div class="slide-item" style="position: relative; width: 100%; height: 100%; cursor: pointer;">
+                <div class="image-layer" style="
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('https://genk.mediacdn.vn/thumb_w/640/139269124445442048/2025/6/15/iphone-17-pro-blue-feature-tighter-crop-1749983352071-1749983352139670107280.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+"></div>
+
+                <div class="auto-container" style="position: relative; z-index: 2; color: white;">
+                    <div class="content-box text-center pt-5">
+                        <h2 style="opacity: 0;">The<br>Vn Travel</h2>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+        <!-- Slide 3 -->
+        <a href="https://genk.vn/16-ty-mat-khau-apple-va-facebook-bi-ro-ri-20250622141214979.chn" style="display: block; width: 100%; height: 500px;">
+            <div class="slide-item" style="position: relative; width: 100%; height: 100%; cursor: pointer;">
+                <div class="image-layer" style="
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('https://genk.mediacdn.vn/139269124445442048/2025/6/22/package-media-47918056760157527760493-06024011242303490915922-1750576258044-17505762581562068418863.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+"></div>
+
+                <div class="auto-container" style="position: relative; z-index: 2; color: white;">
+                    <div class="content-box text-center pt-5">
+                        <h2 style="opacity: 0;">The<br>Vn Travel</h2>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+
+        <!-- Slide 4 -->
+        <a href="https://genk.vn/chu-tich-fpt-truong-gia-binh-khi-nhan-dan-theo-cach-mang-at-co-vu-khi-voi-chung-ta-hom-nay-do-la-ai-20250622154849446.chn" style="display: block; width: 100%; height: 500px;">
+            <div class="slide-item" style="position: relative; width: 100%; height: 100%; cursor: pointer;">
+                <div class="image-layer" style="
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('https://genk.mediacdn.vn/139269124445442048/2025/6/22/ong-truong-gia-binh-chu-tich-hdqt-fpt02-1750579195756509856292-1750582637233-17505826373191210105707.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+"></div>
+
+                <div class="auto-container" style="position: relative; z-index: 2; color: white;">
+                    <div class="content-box text-center pt-5">
+                        <h2 style="opacity: 0;">The<br>Vn Travel</h2>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+
+</section>
+
+
+<div class="row g-4" style="margin-top:40px">
+    @if (Model != null && Model.Any())
+    {
+        foreach (var touristPlace in Model)
+        {
+            <div class="col-lg-3 col-md-6 col-sm-12 wow fadeInUp animated" data-wow-delay="300ms" data-wow-duration="1500ms">
+                <div class="inner-box hvr-bob"
+                     style="cursor: pointer;"
+                     onclick="window.location.href='@Url.Action("Display", "touristPlace", new { id = touristPlace.Id })'">
+                    <figure class="image-box mb-0">
+                        <img src="@touristPlace.ImageUrl" alt="@touristPlace.Name" style="width: 100%; height: 250px; object-fit: cover;" />
+                    </figure>
+
+                    <!--Overlay Box-->
+                    <div class="overlay-box">
+                        <div class="overlay-inner text-center text-white">
+                            <div class="content">
+                                <h4>@touristPlace.Name</h4>
+                                <p><strong>Địa điểm:</strong> @(touristPlace.Region?.Name ?? "Chưa có")</p>
+                                <p><strong>Loại:</strong> @(touristPlace.Category?.Name ?? "Chưa có")</p>
+                                <p><strong></strong> @(string.IsNullOrWhiteSpace(touristPlace.Description) ? "Chưa có" : touristPlace.Description)</p>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <div class="d-flex justify-content-center gap-2 mt-2 flex-wrap">
+                                        <a asp-area="Admin" asp-controller="touristPlace" asp-action="Update" asp-route-id="@touristPlace.Id" class="btn btn-outline-light btn-sm">Sửa</a>
+                                        <a asp-area="Admin" asp-controller="touristPlace" asp-action="Delete" asp-route-id="@touristPlace.Id" class="btn btn-danger btn-sm"
+                                           onclick="event.stopPropagation(); return confirm('Bạn có chắc muốn xóa Địa điểm này không?');">Xóa</a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-white">Không có Địa điểm nào.</p>
+    }
+</div>
+
+
+
+
+
+
+
+

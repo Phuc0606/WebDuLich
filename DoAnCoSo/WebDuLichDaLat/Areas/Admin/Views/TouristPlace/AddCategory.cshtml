@@ -1,0 +1,44 @@
+﻿@model WebDuLichDaLat.Models.Category
+
+<h3>@(Model.Id == 0 ? "Thêm Danh Mục" : "Sửa Danh Mục")</h3>
+
+<form asp-area="Admin" asp-controller="TouristPlaces" asp-action="SaveCategory" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">@(Model.Id == 0 ? "Thêm" : "Cập nhật")</button>
+    <a asp-area="Admin" asp-controller="TouristPlaces"  asp-action="AddCategory" class="btn btn-secondary">Làm mới</a>
+</form>
+
+<hr />
+
+<h4>Danh sách danh mục</h4>
+<table class="table">
+    <thead>
+        <tr><th>#</th><th>Tên</th><th>Thao tác</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var cat in ViewBag.Categories as List<WebDuLichDaLat.Models.Category>)
+        {
+            <tr>
+                <td>@cat.Id</td>
+                <td>@cat.Name</td>
+                <td>
+                    <a asp-area="Admin" asp-controller="TouristPlaces" asp-action="AddCategory" asp-route-id="@cat.Id" class="btn btn-sm btn-warning">Sửa</a>
+                    <form asp-area="Admin" asp-controller="TouristPlaces" asp-action="DeleteCategory" asp-route-id="@cat.Id" method="post" style="display:inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa?');">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

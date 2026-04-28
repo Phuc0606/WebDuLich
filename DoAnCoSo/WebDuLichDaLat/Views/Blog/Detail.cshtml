@@ -1,0 +1,603 @@
+﻿@model WebDuLichDaLat.Models.BlogPost
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "~/Views/Shared/_LayoutNoFooter.cshtml";
+}
+
+<!-- Import Magazine Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Main Content Section -->
+<section id="blog-detail-section" style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%); color: white; min-height: 100vh; padding: 80px 0 40px 0; font-family: 'Plus Jakarta Sans', sans-serif; position: relative; overflow: hidden; margin-top: 0;">
+    <!-- Background Paper Texture -->
+    <div class="paper-texture-bg">
+        <div class="paper-grain paper-grain-1"></div>
+        <div class="paper-grain paper-grain-2"></div>
+        <div class="paper-grain paper-grain-3"></div>
+    </div>
+    
+    <div class="container">
+        <!-- Modern Back Button -->
+        <div class="mb-4">
+            <a href="@Url.Action("Index", "Blog")" class="btn back-btn" 
+               style="background: rgba(255,255,255,0.08); backdrop-filter: blur(15px); color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 15px; padding: 15px 30px; text-decoration: none; font-weight: 500; transition: all 0.3s ease; font-family: 'Plus Jakarta Sans', sans-serif;">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <!-- Main Article Content -->
+            <div class="col-lg-8">
+                <!-- Article Header -->
+                <header class="article-header mb-5">
+                    <!-- Article Meta -->
+                    <div class="article-meta mb-4" style="text-align: center;">
+                        <div class="meta-badges" style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 25px;">
+                            <!-- Date Badge -->
+                            <div class="meta-badge" style="background: rgba(30,60,114,0.15); border: 1px solid rgba(30,60,114,0.3); border-radius: 20px; padding: 8px 20px; display: flex; align-items: center; font-size: 13px; font-weight: 600;">
+                                <i class="bi bi-calendar3 me-2" style="color: #2a5298;"></i>
+                                <span style="color: rgba(255,255,255,0.8);">@Model.PostedDate.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))</span>
+                            </div>
+                            
+                            <!-- Author Badge -->
+                            @if (!string.IsNullOrEmpty(Model.Author))
+                            {
+                                <div class="meta-badge" style="background: rgba(116,185,255,0.15); border: 1px solid rgba(116,185,255,0.3); border-radius: 20px; padding: 8px 20px; display: flex; align-items: center; font-size: 13px; font-weight: 600;">
+                                    <i class="bi bi-person-circle me-2" style="color: #74b9ff;"></i>
+                                    <span style="color: rgba(255,255,255,0.8);">@Model.Author</span>
+                                </div>
+                            }
+                            
+                            <!-- Reading Time Badge -->
+                            @{
+                                var readingTime = Math.Max(1, (int)Math.Ceiling((Model.Content?.Length ?? 0) / 1000.0));
+                            }
+                            <div class="meta-badge" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 8px 20px; display: flex; align-items: center; font-size: 13px; font-weight: 600;">
+                                <i class="bi bi-clock me-2" style="color: #ffffff;"></i>
+                                <span style="color: rgba(255,255,255,0.8);">@readingTime phút đọc</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Article Title -->
+                    <h1 class="article-title mb-4" style="font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 800; color: white; text-align: center; line-height: 1.1; letter-spacing: -2px; margin-bottom: 30px;">
+                        @Model.Title
+                    </h1>
+                </header>
+
+                <!-- Featured Image -->
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div class="featured-image-container mb-5">
+                        @{
+                            var imageUrl = Model.ImageUrl.StartsWith("~") ? Url.Content(Model.ImageUrl) : 
+                                          Model.ImageUrl.Contains("/") ? Model.ImageUrl : 
+                                          Url.Content($"~/Images/{System.IO.Path.GetFileName(Model.ImageUrl)}");
+                        }
+                        <div class="position-relative featured-image" style="border-radius: 25px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.4); margin-bottom: 30px;">
+                            <img src="@imageUrl" alt="@Model.Title" 
+                                 style="width: 100%; height: 60vh; object-fit: cover;"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="image-placeholder" style="width: 100%; height: 60vh; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #74b9ff 100%); display: none; align-items: center; justify-content: center; position: absolute; top: 0; left: 0;">
+                                <div class="placeholder-icon" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border-radius: 25px; padding: 40px; border: 1px solid rgba(255,255,255,0.2);">
+                                    <i class="bi bi-journal-text" style="font-size: 80px; color: rgba(255,255,255,0.9);"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Image Overlay Effects -->
+                            <div class="image-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%); opacity: 0; transition: opacity 0.6s ease; pointer-events: none;"></div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Article Content -->
+                <article class="article-content glassmorphism-panel" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); margin-bottom: 40px;">
+                    <div class="content-body" style="color: rgba(255,255,255,0.85); font-size: 18px; line-height: 1.8; font-family: 'Plus Jakarta Sans', sans-serif; white-space: pre-line;">
+                        @Model.Content
+                    </div>
+                </article>
+
+                <!-- Article Footer -->
+                <footer class="article-footer glassmorphism-panel" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 35px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h4 style="font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; color: white; margin-bottom: 15px;">
+                                Chia sẻ bài viết
+                            </h4>
+                            <div class="social-share" style="display: flex; gap: 15px;">
+                                <button class="btn social-btn" style="background: linear-gradient(135deg, #3b5998, #4c70ba); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                    <i class="bi bi-facebook" style="color: white; font-size: 20px;"></i>
+                                </button>
+                                <button class="btn social-btn" style="background: linear-gradient(135deg, #1da1f2, #4dabf7); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                    <i class="bi bi-twitter" style="color: white; font-size: 20px;"></i>
+                                </button>
+                                <button class="btn social-btn" style="background: linear-gradient(135deg, #0077b5, #00a0dc); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                    <i class="bi bi-linkedin" style="color: white; font-size: 20px;"></i>
+                                </button>
+                                <button class="btn social-btn" style="background: linear-gradient(135deg, #25d366, #4fce5d); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                    <i class="bi bi-whatsapp" style="color: white; font-size: 20px;"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="article-stats" style="margin-top: 20px;">
+                                <div class="stat-item" style="display: inline-flex; align-items: center; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 12px 20px; margin: 0 5px;">
+                                    <i class="bi bi-eye me-2" style="color: #74b9ff;"></i>
+                                    <span style="color: rgba(255,255,255,0.8); font-weight: 600;">@((new Random().Next(100, 1000))) lượt xem</span>
+                                </div>
+                                <div class="stat-item" style="display: inline-flex; align-items: center; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 12px 20px; margin: 0 5px;">
+                                    <i class="bi bi-heart me-2" style="color: #ff6b9d;"></i>
+                                    <span style="color: rgba(255,255,255,0.8); font-weight: 600;">@((new Random().Next(10, 100))) lượt thích</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="sidebar-content" style="position: sticky; top: 100px;">
+                    <!-- Table of Contents (if content is long) -->
+                    @if (Model.Content != null && Model.Content.Length > 1000)
+                    {
+                        <div class="toc-card glassmorphism-panel mb-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+                            <h4 style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: white; margin-bottom: 20px;">
+                                <i class="bi bi-list-ul me-2" style="color: #2a5298;"></i>Mục lục
+                            </h4>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="margin-bottom: 12px;">
+                                    <a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center;">
+                                        <i class="bi bi-chevron-right me-2" style="font-size: 12px; color: #2a5298;"></i>
+                                        Giới thiệu
+                                    </a>
+                                </li>
+                                <li style="margin-bottom: 12px;">
+                                    <a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center;">
+                                        <i class="bi bi-chevron-right me-2" style="font-size: 12px; color: #2a5298;"></i>
+                                        Nội dung chính
+                                    </a>
+                                </li>
+                                <li style="margin-bottom: 12px;">
+                                    <a href="#" style="color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center;">
+                                        <i class="bi bi-chevron-right me-2" style="font-size: 12px; color: #2a5298;"></i>
+                                        Kết luận
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions-card glassmorphism-panel mb-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+                        <h4 style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: white; margin-bottom: 20px;">
+                            <i class="bi bi-lightning me-2" style="color: #74b9ff;"></i>Thao tác nhanh
+                        </h4>
+                        <div class="action-buttons">
+                            <button class="btn action-btn w-100 mb-3" style="background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border: none; border-radius: 15px; padding: 15px; font-weight: 600; transition: all 0.3s ease; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                <i class="bi bi-bookmark me-2"></i>Lưu bài viết
+                            </button>
+                            <button class="btn action-btn w-100 mb-3" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; padding: 15px; font-weight: 600; transition: all 0.3s ease; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                <i class="bi bi-printer me-2"></i>In bài viết
+                            </button>
+                            <button class="btn action-btn w-100" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; padding: 15px; font-weight: 600; transition: all 0.3s ease; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                <i class="bi bi-flag me-2"></i>Báo cáo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Related Articles -->
+                    <div class="related-articles-card glassmorphism-panel" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+                        <h4 style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: white; margin-bottom: 20px;">
+                            <i class="bi bi-collection me-2" style="color: #ff6b9d;"></i>Bài viết liên quan
+                        </h4>
+                        <div class="related-list">
+                            <div class="related-item mb-3" style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 15px; transition: all 0.3s ease; cursor: pointer;">
+                                <h6 style="color: white; font-size: 14px; font-weight: 600; margin-bottom: 8px; line-height: 1.3;">
+                                    Khám phá vẻ đẹp Đà Lạt mùa hoa
+                                </h6>
+                                <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 0;">
+                                    <i class="bi bi-calendar3 me-1"></i>15/12/2024
+                                </p>
+                            </div>
+                            <div class="related-item mb-3" style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 15px; transition: all 0.3s ease; cursor: pointer;">
+                                <h6 style="color: white; font-size: 14px; font-weight: 600; margin-bottom: 8px; line-height: 1.3;">
+                                    Ẩm thực đường phố Đà Lạt
+                                </h6>
+                                <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 0;">
+                                    <i class="bi bi-calendar3 me-1"></i>12/12/2024
+                                </p>
+                            </div>
+                            <div class="related-item" style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 15px; transition: all 0.3s ease; cursor: pointer;">
+                                <h6 style="color: white; font-size: 14px; font-weight: 600; margin-bottom: 8px; line-height: 1.3;">
+                                    Lịch trình 3 ngày 2 đêm tại Đà Lạt
+                                </h6>
+                                <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 0;">
+                                    <i class="bi bi-calendar3 me-1"></i>10/12/2024
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Modern CSS Variables */
+    :root {
+        --primary-blue: #1e3c72;
+        --primary-blue-light: #2a5298;
+        --accent-blue: #74b9ff;
+        --accent-pink: #ff6b9d;
+        --glass-bg: rgba(255,255,255,0.05);
+        --glass-border: rgba(255,255,255,0.1);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255,255,255,0.8);
+        --text-muted: rgba(255,255,255,0.6);
+        --shadow-light: 0 15px 35px rgba(0,0,0,0.3);
+        --shadow-heavy: 0 25px 50px rgba(0,0,0,0.4);
+        --blur-light: blur(15px);
+        --blur-heavy: blur(25px);
+        --radius-sm: 15px;
+        --radius-md: 20px;
+        --radius-lg: 25px;
+        --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* Paper Texture Background */
+    .paper-texture-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .paper-grain {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.1;
+        animation: paperFloat 20s ease-in-out infinite;
+    }
+
+    .paper-grain-1 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        top: 10%;
+        right: 5%;
+        animation-delay: 0s;
+    }
+
+    .paper-grain-2 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+        bottom: 20%;
+        left: 10%;
+        animation-delay: 7s;
+    }
+
+    .paper-grain-3 {
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        top: 50%;
+        left: 50%;
+        animation-delay: 14s;
+    }
+
+    /* Glassmorphism Effects */
+    .glassmorphism-panel {
+        backdrop-filter: var(--blur-heavy);
+        -webkit-backdrop-filter: var(--blur-heavy);
+        transition: var(--transition-smooth);
+        position: relative;
+    }
+
+    .glassmorphism-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(30,60,114,0.05), rgba(116,185,255,0.03));
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+        pointer-events: none;
+    }
+
+    .glassmorphism-panel:hover::before {
+        opacity: 1;
+    }
+
+    .glassmorphism-panel:hover {
+        background: rgba(255,255,255,0.08) !important;
+        border-color: rgba(255,255,255,0.15) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 30px rgba(30,60,114,0.1) !important;
+    }
+
+    /* Back Button */
+    .back-btn:hover {
+        background: rgba(255,255,255,0.12) !important;
+        border-color: rgba(255,255,255,0.2) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Article Header */
+    .article-header {
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    /* Meta Badges */
+    .meta-badge {
+        transition: var(--transition-smooth);
+    }
+
+    .meta-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    /* Article Title */
+    .article-title {
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    /* Featured Image */
+    .featured-image-container {
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .featured-image {
+        transition: var(--transition-smooth);
+        cursor: pointer;
+    }
+
+    .featured-image:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 35px 70px rgba(0,0,0,0.6) !important;
+    }
+
+    .featured-image:hover .image-overlay {
+        opacity: 1 !important;
+    }
+
+    /* Article Content */
+    .article-content {
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    .content-body {
+        text-align: justify;
+        text-justify: inter-word;
+    }
+
+    .content-body::first-letter {
+        font-family: 'Playfair Display', serif;
+        font-size: 4em;
+        font-weight: 700;
+        line-height: 0.8;
+        float: left;
+        margin: 0.1em 0.1em 0 0;
+        color: #2a5298;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Article Footer */
+    .article-footer {
+        animation: fadeInUp 0.8s ease-out 0.8s both;
+    }
+
+    /* Social Buttons */
+    .social-btn {
+        transition: var(--transition-smooth);
+    }
+
+    .social-btn:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4) !important;
+    }
+
+    /* Sidebar */
+    .sidebar-content {
+        animation: fadeInUp 0.8s ease-out 1s both;
+    }
+
+    /* TOC Links */
+    .toc-card a:hover {
+        color: #2a5298 !important;
+        transform: translateX(5px);
+    }
+
+    /* Action Buttons */
+    .action-btn {
+        transition: var(--transition-smooth);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(30,60,114,0.4) !important;
+    }
+
+    /* Related Items */
+    .related-item {
+        transition: var(--transition-smooth);
+    }
+
+    .related-item:hover {
+        background: rgba(255,255,255,0.1) !important;
+        transform: translateX(5px);
+    }
+
+    /* Stat Items */
+    .stat-item {
+        transition: var(--transition-smooth);
+    }
+
+    .stat-item:hover {
+        transform: translateY(-2px);
+        background: rgba(255,255,255,0.15) !important;
+    }
+</style>
+
+@{
+    string blogDetailKeyframes = @"
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes paperFloat {
+            0%, 100% { 
+                transform: translateX(0px) translateY(0px);
+                opacity: 0.1;
+            }
+            25% { 
+                transform: translateX(20px) translateY(-10px);
+                opacity: 0.15;
+            }
+            50% { 
+                transform: translateX(-10px) translateY(15px);
+                opacity: 0.08;
+            }
+            75% { 
+                transform: translateX(15px) translateY(-5px);
+                opacity: 0.12;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    ";
+    
+    string blogDetailResponsiveCSS = @"
+        @media (max-width: 992px) {
+            .sidebar-content {
+                position: relative !important;
+                top: 0 !important;
+                margin-top: 40px;
+            }
+
+            #blog-detail-section {
+                padding: 20px 0;
+            }
+
+            .article-title {
+                font-size: 2.5rem !important;
+            }
+
+            .featured-image {
+                height: 40vh !important;
+            }
+
+            .content-body::first-letter {
+                font-size: 3em !important;
+            }
+
+            .paper-grain {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .article-content {
+                padding: 30px !important;
+            }
+
+            .article-title {
+                font-size: 2rem !important;
+            }
+
+            .meta-badges {
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+
+            .featured-image {
+                height: 30vh !important;
+            }
+
+            .content-body {
+                font-size: 16px !important;
+            }
+
+            .content-body::first-letter {
+                font-size: 2.5em !important;
+            }
+        }
+    ";
+}
+
+<style>
+    @Html.Raw(blogDetailKeyframes)
+    @Html.Raw(blogDetailResponsiveCSS)
+</style>
+
+<script>
+    // Modern Reading Experience
+    document.addEventListener('DOMContentLoaded', function() {
+        // Smooth scroll for TOC links
+        const tocLinks = document.querySelectorAll('.toc-card a');
+        tocLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Add smooth scroll behavior here
+            });
+        });
+
+        // Reading progress indicator
+        const article = document.querySelector('.article-content');
+        if (article) {
+            window.addEventListener('scroll', function() {
+                const articleTop = article.offsetTop;
+                const articleHeight = article.offsetHeight;
+                const windowHeight = window.innerHeight;
+                const scrollTop = window.pageYOffset;
+                
+                const progress = Math.min(100, Math.max(0, 
+                    ((scrollTop - articleTop + windowHeight) / articleHeight) * 100
+                ));
+                
+                // Update progress indicator if exists
+                const progressBar = document.querySelector('.reading-progress');
+                if (progressBar) {
+                    progressBar.style.width = progress + '%';
+                }
+            });
+        }
+
+        // Social sharing functionality
+        const socialBtns = document.querySelectorAll('.social-btn');
+        socialBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Add social sharing logic here
+                console.log('Social share clicked');
+            });
+        });
+
+        // Print functionality
+        const printBtn = document.querySelector('.action-btn:nth-child(2)');
+        if (printBtn) {
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+        }
+    });
+</script>

@@ -1,0 +1,135 @@
+@model WebDuLichDaLat.Models.SuggestionViewModel
+
+<div class="trip-suggestion-card mb-4 p-4 rounded-4 shadow-lg" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.12);">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h5 class="mb-1" style="font-weight: 800; color: #ffffff; font-size: 1.3rem;">
+                @(string.IsNullOrEmpty(Model.PlanName) ? "Gợi ý lịch trình" : Model.PlanName)
+            </h5>
+            <small class="text-muted" style="color: #b8b8d4 !important; font-weight: 500;">
+                📅 @Model.Days ngày @if(Model.Nights > 0){<text>– @Model.Nights đêm</text>}
+            </small>
+        </div>
+        <div class="text-end">
+            <div style="font-size: 0.85rem; color: #b8b8d4; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Tổng chi phí</div>
+            <div style="font-size: 1.3rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                @Model.TotalCost.ToString("N0")đ
+            </div>
+            <div style="font-size: 0.9rem; color: #90ee90; font-weight: 600;">
+                Còn lại: @Model.Remaining.ToString("N0")đ
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 h-100" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <div class="d-flex align-items-center mb-2">
+                    <span style="font-size: 1.2rem; margin-right: 6px;">🚗</span>
+                    <strong style="font-size: 0.95rem; color: #ffffff; font-weight: 700;">Vận chuyển</strong>
+                </div>
+                <div style="font-size: 0.85rem; color: #b8b8d4; margin-bottom: 8px;">
+                    @Model.Transport?.Name (@Model.Transport?.Type)
+                </div>
+                <div style="font-size: 1rem; font-weight: 700; color: #667eea;">
+                    @Model.TransportCost.ToString("N0")đ
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 h-100" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <div class="d-flex align-items-center mb-2">
+                    <span style="font-size: 1.2rem; margin-right: 6px;">🏨</span>
+                    <strong style="font-size: 0.95rem; color: #ffffff; font-weight: 700;">Khách sạn</strong>
+                </div>
+                <div style="font-size: 0.85rem; color: #b8b8d4; margin-bottom: 8px;">
+                    @if (!string.IsNullOrEmpty(Model.HotelDetails))
+                    {
+                        @Html.Raw(Model.HotelDetails.Split("<br/>")[0])
+                    }
+                    else
+                    {
+                        <text>Chưa chọn</text>
+                    }
+                </div>
+                <div style="font-size: 1rem; font-weight: 700; color: #667eea;">
+                    @Model.HotelCost.ToString("N0")đ
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 h-100" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <div class="d-flex align-items-center mb-2">
+                    <span style="font-size: 1.2rem; margin-right: 6px;">🍽️</span>
+                    <strong style="font-size: 0.95rem; color: #ffffff; font-weight: 700;">Ăn uống</strong>
+                </div>
+                <div style="font-size: 0.85rem; color: #b8b8d4; margin-bottom: 8px;">
+                    @if (!string.IsNullOrEmpty(Model.FoodDetails))
+                    {
+                        <text>Đã lên lịch theo từng ngày</text>
+                    }
+                    else
+                    {
+                        <text>Chưa có chi tiết</text>
+                    }
+                </div>
+                <div style="font-size: 1rem; font-weight: 700; color: #667eea;">
+                    @Model.FoodCost.ToString("N0")đ
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="p-3 rounded-3 h-100" style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <div class="d-flex align-items-center mb-2">
+                    <span style="font-size: 1.2rem; margin-right: 6px;">🎫</span>
+                    <strong style="font-size: 0.95rem; color: #ffffff; font-weight: 700;">Vé + nội thành</strong>
+                </div>
+                <div style="font-size: 0.8rem; color: #b8b8d4; margin-bottom: 4px;">
+                    Vé: @Model.TicketCost.ToString("N0")đ<br />
+                    Nội thành: @Model.LocalTransportCost.ToString("N0")đ
+                </div>
+                <div style="font-size: 0.8rem; color: #8b8ba7;">
+                    Phát sinh: @Model.MiscCost.ToString("N0")đ
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.TotalPlaces > 0)
+    {
+        <div class="mt-3" style="font-size: 0.9rem; color: #b8b8d4; font-weight: 500;">
+            📍 @Model.TotalPlaces địa điểm tham quan
+        </div>
+    }
+
+    @if (Model.Warnings != null && Model.Warnings.Count > 0)
+    {
+        <div class="mt-3 p-3 rounded-3" style="background: rgba(255, 193, 7, 0.15); border: 1px solid rgba(255, 193, 7, 0.3); font-size: 0.85rem; color: #ffd700; backdrop-filter: blur(10px);">
+            <strong>⚠️ Lưu ý:</strong><br />
+            @foreach (var w in Model.Warnings)
+            {
+                @Html.Raw(w)<br />
+            }
+        </div>
+    }
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

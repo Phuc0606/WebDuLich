@@ -1,0 +1,137 @@
+﻿@model WebDuLichDaLat.Models.Contact
+
+@{
+    Layout = "~/Views/Shared/_LayoutNoFooter.cshtml";
+    ViewData["Title"] = "Liên hệ với chúng tôi";
+    ViewBag.HeroTitle = "Liên hệ";
+    ViewBag.HeroTagline = "Chúng tôi luôn sẵn sàng hỗ trợ bạn";
+    ViewBag.HeroButtonText = "Gửi tin nhắn";
+    ViewBag.HeroButtonLink = "#contact-section";
+    ViewBag.HeroHeight = "500px";
+}
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+<style>
+    
+
+    main {
+        min-height: calc(100vh - 60px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 100px 15px 30px 15px;
+    }
+    
+    .hero-section {
+        margin-top: 0;
+    }
+
+    .contact-card {
+        background: white;
+        border-radius: 12px;
+        padding: 40px 35px;
+        width: 100%;
+        max-width: 1000px; /* ← tăng lên từ 700px */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+        .contact-card h3 {
+            text-align: center;
+            color: #0d6efd;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+    .form-control {
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .btn-submit {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff;
+        background-color: #0d6efd;
+        border: none;
+        border-radius: 8px;
+        white-space: nowrap;
+        text-align: center;
+        line-height: 1.2;
+        text-decoration: none;
+    }
+
+        .btn-submit:hover {
+            background-color: #0b5ed7;
+        }
+    </style>
+
+<!-- Hero Section -->
+@await Html.PartialAsync("_HeroSection")
+
+<main id="contact-section">
+    <div class="contact-card">
+        <h3>
+            <span class="d-inline-flex align-items-center gap-2">
+                <i class="bi bi-envelope-paper-fill fs-4 text-primary"></i>
+                <span class="text-primary">Liên hệ với chúng tôi</span>
+            </span>
+        </h3>
+
+        @if (ViewBag.Success != null)
+        {
+            <div class="alert alert-success text-center mt-3">@ViewBag.Success</div>
+        }
+
+        <form asp-action="Index" method="post" class="mt-3">
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Họ tên</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PhoneNumber" class="form-label">Số điện thoại</label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Subject" class="form-label">Chủ đề</label>
+                <select asp-for="Subject" class="form-control">
+                    <option value="">-- Chọn chủ đề --</option>
+                    <option>Hỏi về địa điểm</option>
+                    <option>Yêu cầu hỗ trợ </option>
+                    <option>Góp ý / phản hồi</option>
+                    <option>Khác</option>
+                </select>
+                <span asp-validation-for="Subject" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Message" class="form-label">Nội dung</label>
+                <textarea asp-for="Message" rows="4" class="form-control"></textarea>
+                <span asp-validation-for="Message" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn-submit">Gửi liên hệ</button>
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

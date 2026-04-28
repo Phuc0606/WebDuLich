@@ -1,0 +1,640 @@
+@model WebDuLichDaLat.Models.Restaurant
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "~/Views/Shared/_LayoutNoFooter.cshtml";
+}
+
+<!-- Import Modern Font -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Main Content Section -->
+<section id="restaurant-detail-section" style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%); color: white; min-height: 100vh; padding: 80px 0 40px 0; font-family: 'Plus Jakarta Sans', sans-serif; position: relative; overflow: hidden; margin-top: 0;">
+    <!-- Background Neon Glow -->
+    <div class="section-glow-bg">
+        <div class="section-glow-orb section-glow-1"></div>
+        <div class="section-glow-orb section-glow-2"></div>
+        <div class="section-glow-orb section-glow-3"></div>
+    </div>
+    
+    <div class="container">
+        <!-- Modern Back Button -->
+        <div class="mb-4">
+            <a href="@Url.Action("Index", "Restaurant")" class="btn back-btn" 
+               style="background: rgba(255,255,255,0.08); backdrop-filter: blur(15px); color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 15px; padding: 15px 30px; text-decoration: none; font-weight: 500; transition: all 0.3s ease; font-family: 'Plus Jakarta Sans', sans-serif;">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+            </a>
+        </div>
+
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Modern Hero Image -->
+                <div class="mb-5 hero-image-container">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <div class="hero-image-full">
+                            <div class="position-relative hero-parallax" style="height: 60vh; border-radius: 25px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.4); margin-bottom: 30px;">
+                                <img src="@Model.ImageUrl" alt="@Model.Name" 
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                                <!-- Modern Overlay -->
+                                <div class="position-absolute bottom-0 start-0 end-0" style="background: linear-gradient(transparent, rgba(0,0,0,0.8)); height: 200px; display: flex; align-items: end; padding: 40px;">
+                                    <div class="container">
+                                        <div class="floating-element">
+                                            <h1 class="mb-3" style="font-size: 3.5rem; font-weight: 800; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.7); letter-spacing: -1px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                                @Model.Name
+                                            </h1>
+                                            @if (Model.TouristPlace != null)
+                                            {
+                                                <p class="mb-0" style="font-size: 1.3rem; color: rgba(255,255,255,0.9); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); display: flex; align-items: center;">
+                                                    <i class="bi bi-geo-alt me-3" style="color: #ff8e53; font-size: 1.5rem;"></i>@Model.TouristPlace.Name
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Modern Floating Action Buttons -->
+                                <div class="position-absolute top-0 end-0 m-4">
+                                    <div class="d-flex flex-column gap-3">
+                                        <button class="btn floating-element" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); border: none; border-radius: 50%; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                                            <i class="bi bi-heart" style="color: #ff8e53; font-size: 20px;"></i>
+                                        </button>
+                                        <button class="btn floating-element" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); border: none; border-radius: 50%; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation-delay: 0.2s;">
+                                            <i class="bi bi-share" style="color: #ff8e53; font-size: 20px;"></i>
+                                        </button>
+                                        <button class="btn floating-element" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); border: none; border-radius: 50%; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation-delay: 0.4s;">
+                                            <i class="bi bi-camera" style="color: #ffd700; font-size: 20px;"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="hero-image-full">
+                            <div class="position-relative hero-parallax" style="height: 60vh; background: linear-gradient(135deg, #ff8e53 0%, #ff6b9d 50%, #c44569 100%); border-radius: 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 25px 50px rgba(0,0,0,0.4); margin-bottom: 30px;">
+                                <div class="text-center floating-element">
+                                    <div class="restaurant-icon-container mb-4" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border-radius: 25px; padding: 40px; border: 1px solid rgba(255,255,255,0.2); display: inline-block;">
+                                        <i class="bi bi-egg-fried" style="font-size: 80px; color: rgba(255,255,255,0.9);"></i>
+                                    </div>
+                                    <h1 class="mb-3" style="font-size: 3.5rem; font-weight: 800; color: white; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                        @Model.Name
+                                    </h1>
+                                    @if (Model.TouristPlace != null)
+                                    {
+                                        <p class="mb-0" style="font-size: 1.3rem; color: rgba(255,255,255,0.9);">
+                                            <i class="bi bi-geo-alt me-3"></i>@Model.TouristPlace.Name
+                                        </p>
+                                    }
+                                </div>
+                                <!-- Floating particles effect -->
+                                <div class="floating-particles">
+                                    <div class="particle" style="position: absolute; width: 4px; height: 4px; background: rgba(255,255,255,0.6); border-radius: 50%; top: 20%; left: 15%; animation: float 3s ease-in-out infinite;"></div>
+                                    <div class="particle" style="position: absolute; width: 6px; height: 6px; background: rgba(255,255,255,0.4); border-radius: 50%; top: 60%; right: 20%; animation: float 4s ease-in-out infinite 1s;"></div>
+                                    <div class="particle" style="position: absolute; width: 3px; height: 3px; background: rgba(255,255,255,0.7); border-radius: 50%; bottom: 30%; left: 70%; animation: float 5s ease-in-out infinite 2s;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Modern Description Card -->
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="mb-5 description-card glassmorphism-panel" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 35px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+                        <h3 class="mb-4" style="font-size: 24px; font-weight: 700; color: white; font-family: 'Plus Jakarta Sans', sans-serif;">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon" style="background: linear-gradient(135deg, #ff8e53, #ff6b9d); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                    <i class="bi bi-info-circle" style="color: white; font-size: 18px;"></i>
+                                </div>
+                                Mô tả chi tiết
+                            </div>
+                        </h3>
+                        <p style="color: rgba(255,255,255,0.8); font-size: 16px; line-height: 1.8; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">
+                            @Model.Description
+                        </p>
+                    </div>
+                }
+
+                <!-- Menu Highlights Card -->
+                <div class="mb-5 menu-card glassmorphism-panel" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 35px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+                    <h3 class="mb-4" style="font-size: 24px; font-weight: 700; color: white; font-family: 'Plus Jakarta Sans', sans-serif;">
+                        <div class="d-flex align-items-center">
+                            <div class="menu-icon" style="background: linear-gradient(135deg, #ff8e53, #ff6b9d); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                <i class="bi bi-menu-button-wide" style="color: white; font-size: 18px;"></i>
+                            </div>
+                            Đặc sản nổi bật
+                        </div>
+                    </h3>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="menu-item" style="background: rgba(255,142,83,0.1); border: 1px solid rgba(255,142,83,0.2); border-radius: 15px; padding: 20px; transition: all 0.3s ease;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-star-fill me-2" style="color: #ffd700;"></i>
+                                    <h5 style="color: white; margin: 0; font-weight: 600;">Món đặc sản địa phương</h5>
+                                </div>
+                                <p style="color: rgba(255,255,255,0.7); margin: 0; font-size: 14px;">Hương vị đặc trưng của Đà Lạt</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="menu-item" style="background: rgba(255,142,83,0.1); border: 1px solid rgba(255,142,83,0.2); border-radius: 15px; padding: 20px; transition: all 0.3s ease;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-cup-hot me-2" style="color: #ff8e53;"></i>
+                                    <h5 style="color: white; margin: 0; font-weight: 600;">Đồ uống thơm ngon</h5>
+                                </div>
+                                <p style="color: rgba(255,255,255,0.7); margin: 0; font-size: 14px;">Cà phê và trà đặc sản</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modern Sticky Info Sidebar -->
+            <div class="col-lg-4">
+                <div class="sticky-info-card" style="position: sticky; top: 100px;">
+                    <!-- Main Info Card -->
+                    <div class="info-card glassmorphism-panel" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.15); border-radius: 25px; padding: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); margin-bottom: 25px;">
+                        <!-- Modern Price Section -->
+                        <div class="price-section mb-4" style="text-align: center; padding: 30px; background: linear-gradient(135deg, rgba(255,142,83,0.15), rgba(255,107,157,0.1)); border-radius: 20px; border: 1px solid rgba(255,142,83,0.3);">
+                            <div style="color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 8px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif;">Giá trung bình mỗi người</div>
+                            <div class="price-display" style="font-size: 2.8rem; font-weight: 800; color: #ff8e53; margin-bottom: 5px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                @string.Format("{0:N0}", Model.AveragePricePerPerson)<span style="font-size: 1.2rem; font-weight: 600; color: rgba(255,255,255,0.8);">đ</span>
+                            </div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif;">Giá có thể thay đổi theo thời gian</div>
+                        </div>
+
+                        <!-- Modern Action Buttons -->
+                        <div class="action-buttons mb-4">
+                            <button class="btn book-now-btn w-100 mb-3" 
+                                    style="background: linear-gradient(135deg, #ff8e53, #ff6b9d); color: white; border: none; border-radius: 20px; padding: 20px; font-size: 18px; font-weight: 700; box-shadow: 0 12px 35px rgba(255,142,83,0.4); transition: all 0.3s ease; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                <i class="bi bi-telephone me-2"></i>Gọi đặt bàn
+                            </button>
+                            <button class="btn direction-btn w-100" 
+                                    style="background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 18px; font-size: 16px; font-weight: 600; transition: all 0.3s ease; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                <i class="bi bi-geo-alt me-2"></i>Chỉ đường
+                            </button>
+                        </div>
+
+                        <div class="text-center" style="color: rgba(255,255,255,0.6); font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                            Liên hệ trực tiếp để đặt bàn
+                        </div>
+                    </div>
+
+                    <!-- Modern Contact Card -->
+                    <div class="contact-card glassmorphism-panel" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+                        <h4 class="mb-3" style="font-size: 18px; font-weight: 700; color: white; font-family: 'Plus Jakarta Sans', sans-serif;">
+                            <div class="d-flex align-items-center">
+                                <div class="contact-icon" style="background: linear-gradient(135deg, #ff8e53, #ff6b9d); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                    <i class="bi bi-headset" style="color: white; font-size: 16px;"></i>
+                                </div>
+                                Thông tin liên hệ
+                            </div>
+                        </h4>
+
+                        <!-- Address -->
+                        @if (!string.IsNullOrEmpty(Model.Address))
+                        {
+                            <div class="contact-item mb-3" style="padding: 18px; background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-geo-alt-fill me-3" style="color: #ff8e53; font-size: 18px; margin-top: 2px;"></i>
+                                    <div>
+                                        <div style="font-weight: 600; color: white; margin-bottom: 5px; font-family: 'Plus Jakarta Sans', sans-serif;">Địa chỉ</div>
+                                        <div style="color: rgba(255,255,255,0.7); font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif;">@Model.Address</div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Phone -->
+                        @if (!string.IsNullOrEmpty(Model.Phone))
+                        {
+                            <div class="contact-item mb-3" style="padding: 18px; background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-telephone-fill me-3" style="color: #ff8e53; font-size: 18px;"></i>
+                                    <div>
+                                        <div style="font-weight: 600; color: white; margin-bottom: 5px; font-family: 'Plus Jakarta Sans', sans-serif;">Hotline</div>
+                                        <a href="tel:@Model.Phone" style="color: #ff8e53; text-decoration: none; font-size: 16px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                            @Model.Phone
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Modern Quick Actions -->
+                        <div class="quick-actions mt-4">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button class="btn w-100" style="background: rgba(255,142,83,0.1); color: #ff8e53; border: 1px solid rgba(255,142,83,0.3); border-radius: 15px; padding: 15px; font-size: 14px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                        <i class="bi bi-chat-dots me-1"></i>Chat
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn w-100" style="background: rgba(255,142,83,0.1); color: #ff8e53; border: 1px solid rgba(255,142,83,0.3); border-radius: 15px; padding: 15px; font-size: 14px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                        <i class="bi bi-share me-1"></i>Chia sẻ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Modern CSS Variables */
+    :root {
+        --primary-orange: #ff8e53;
+        --primary-pink: #ff6b9d;
+        --primary-pink-dark: #c44569;
+        --accent-gold: #ffd700;
+        --glass-bg: rgba(255,255,255,0.05);
+        --glass-border: rgba(255,255,255,0.1);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255,255,255,0.8);
+        --text-muted: rgba(255,255,255,0.6);
+        --shadow-light: 0 15px 35px rgba(0,0,0,0.3);
+        --shadow-heavy: 0 25px 50px rgba(0,0,0,0.4);
+        --blur-light: blur(15px);
+        --blur-heavy: blur(25px);
+        --blur-ultra: blur(30px);
+        --radius-sm: 15px;
+        --radius-md: 20px;
+        --radius-lg: 25px;
+        --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* Background Neon Glow */
+    .section-glow-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .section-glow-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.3;
+        animation: float 12s ease-in-out infinite;
+    }
+
+    .section-glow-1 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255,142,83,0.2) 0%, transparent 70%);
+        top: 20%;
+        right: 10%;
+        animation-delay: 1s;
+    }
+
+    .section-glow-2 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,107,157,0.15) 0%, transparent 70%);
+        bottom: 30%;
+        left: 20%;
+        animation-delay: 3s;
+    }
+
+    .section-glow-3 {
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+        top: 50%;
+        left: 60%;
+        animation-delay: 5s;
+    }
+
+    /* Glassmorphism Effects */
+    .glassmorphism-panel {
+        backdrop-filter: var(--blur-heavy);
+        -webkit-backdrop-filter: var(--blur-heavy);
+        transition: var(--transition-smooth);
+        position: relative;
+    }
+
+    .glassmorphism-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,142,83,0.05), rgba(255,107,157,0.03));
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+        pointer-events: none;
+    }
+
+    .glassmorphism-panel:hover::before {
+        opacity: 1;
+    }
+
+    .glassmorphism-panel:hover {
+        background: rgba(255,255,255,0.08) !important;
+        border-color: rgba(255,255,255,0.15) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,142,83,0.1) !important;
+    }
+
+    /* Back Button */
+    .back-btn:hover {
+        background: rgba(255,255,255,0.12) !important;
+        border-color: rgba(255,255,255,0.2) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Hero Image */
+    .hero-image-container {
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    /* Cards Animation */
+    .description-card {
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .menu-card {
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    /* Sticky Info Card */
+    .sticky-info-card {
+        animation: fadeInUp 0.8s ease-out 0.8s both;
+    }
+
+    .info-card {
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, transparent, rgba(255,142,83,0.05));
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+        border-radius: var(--radius-lg);
+        pointer-events: none;
+    }
+
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,142,83,0.15) !important;
+    }
+
+    .info-card:hover::before {
+        opacity: 1;
+    }
+
+    /* Price Display Animation */
+    .price-display {
+        animation: pulse 2s infinite;
+        position: relative;
+    }
+
+    .price-display::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 120%;
+        height: 120%;
+        background: radial-gradient(circle, rgba(255,142,83,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: ripple 3s infinite;
+        pointer-events: none;
+    }
+
+    /* Action Buttons */
+    .book-now-btn {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .book-now-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .book-now-btn:hover::before {
+        left: 100%;
+    }
+
+    .book-now-btn:hover {
+        background: linear-gradient(135deg, var(--primary-pink), var(--primary-orange)) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 18px 45px rgba(255,142,83,0.5) !important;
+    }
+
+    .direction-btn:hover {
+        background: rgba(255,255,255,0.12) !important;
+        border-color: rgba(255,255,255,0.2) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Contact Items */
+    .contact-item {
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .contact-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,142,83,0.1), transparent);
+        transition: left 0.5s;
+    }
+
+    .contact-item:hover::before {
+        left: 100%;
+    }
+
+    .contact-item:hover {
+        background: rgba(255,255,255,0.1) !important;
+        border-color: rgba(255,255,255,0.15) !important;
+        transform: translateX(5px);
+    }
+
+    /* Menu Items */
+    .menu-item:hover {
+        background: rgba(255,142,83,0.15) !important;
+        border-color: rgba(255,142,83,0.3) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255,142,83,0.2);
+    }
+
+    /* Quick Actions */
+    .quick-actions .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255,142,83,0.3);
+        background: rgba(255,142,83,0.15) !important;
+    }
+
+    /* Floating Elements */
+    .floating-element {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:hover {
+        transform: translateY(-8px) !important;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important;
+    }
+
+    /* Floating Particles */
+    .particle {
+        animation: float 3s ease-in-out infinite;
+    }
+</style>
+
+@{
+    string restaurantDetailKeyframes = @"
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(1deg); }
+            66% { transform: translateY(-5px) rotate(-1deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes ripple {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+    ";
+    
+    string restaurantDetailResponsiveCSS = @"
+        @media (max-width: 992px) {
+            .sticky-info-card {
+                position: relative !important;
+                top: 0 !important;
+                margin-top: 30px;
+            }
+
+            #restaurant-detail-section {
+                padding: 20px 0;
+            }
+
+            .hero-image-container .position-relative {
+                height: 300px !important;
+            }
+
+            .hero-image-container h1 {
+                font-size: 2.5rem !important;
+            }
+
+            .price-display {
+                font-size: 2.2rem !important;
+            }
+
+            .section-glow-orb {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .info-card {
+                padding: 30px !important;
+            }
+
+            .contact-card {
+                padding: 25px !important;
+            }
+
+            .hero-image-container h1 {
+                font-size: 2rem !important;
+            }
+        }
+    ";
+}
+
+<style>
+    @Html.Raw(restaurantDetailKeyframes)
+    @Html.Raw(restaurantDetailResponsiveCSS)
+</style>
+
+<script>
+    // Modern Parallax Effect
+    document.addEventListener('DOMContentLoaded', function() {
+        const heroParallax = document.querySelector('.hero-parallax');
+        const floatingElements = document.querySelectorAll('.floating-element');
+        
+        if (heroParallax) {
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const rate = scrolled * -0.3;
+                heroParallax.style.transform = `translateY(${rate}px)`;
+            });
+        }
+
+        // Mouse move parallax effect
+        document.addEventListener('mousemove', function(e) {
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            floatingElements.forEach((element, index) => {
+                const speed = (index + 1) * 0.3;
+                const x = (mouseX - 0.5) * speed;
+                const y = (mouseY - 0.5) * speed;
+                element.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+
+        // Smooth scroll for info card
+        const infoCard = document.querySelector('.info-card');
+        if (infoCard) {
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const cardTop = infoCard.offsetTop;
+                const windowHeight = window.innerHeight;
+                
+                if (scrolled > cardTop - windowHeight + 100) {
+                    infoCard.style.transform = 'translateY(-8px)';
+                    infoCard.style.boxShadow = '0 35px 70px rgba(0,0,0,0.6), 0 0 40px rgba(255,142,83,0.15)';
+                } else {
+                    infoCard.style.transform = 'translateY(0)';
+                    infoCard.style.boxShadow = '0 25px 50px rgba(0,0,0,0.4)';
+                }
+            });
+        }
+    });
+</script>

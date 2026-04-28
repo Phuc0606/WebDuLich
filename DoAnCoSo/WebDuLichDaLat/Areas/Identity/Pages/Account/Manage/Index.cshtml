@@ -1,0 +1,123 @@
+﻿@page
+@model IndexModel
+@using WebDuLichDaLat.Models
+@{
+    ViewData["Title"] = "Profile";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<h3 class="text-white" style="margin-left: 30px;">@ViewData["Title"]</h3>
+
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+    var user = await UserManager.GetUserAsync(User); // Lấy thông tin người dùng
+    var fullName = user?.FullName;
+
+    // Tách tên cuối từ fullName (lấy từ sau cùng)
+    var lastName = fullName?.Split(' ').Last();
+
+    // Kiểm tra null và viết hoa chữ cái đầu tiên, giữ nguyên các chữ còn lại
+    var capitalizedLastName = lastName != null ? char.ToUpper(lastName[0]) + lastName.Substring(1).ToLower() : "";
+}
+
+<!-- Chia thành 2 phần trong container -->
+<div class="container mt-4">
+    <div class="row" style="margin-left: 5px;">
+        <div class="col-md-3">
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a>
+                </li>
+                @if (hasExternalLogins)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" id="external-login" asp-page="./ExternalLogins">External logins</a>
+                    </li>
+                }
+                <li class="nav-item">
+                    <a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a>
+                </li>
+                
+
+                <li class="nav-item">
+                    <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/TouristPlace/Index" method="post" onsubmit="return confirmLogout();">
+                        <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0" style="color: red !important; border: none;">Thoát</button>
+                    </form>
+                </li>
+
+
+                <!-- Modal Confirm Logout -->
+                <div class="modal" tabindex="-1" id="confirmLogoutModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Xác nhận thoát</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bạn có muốn thoát tài khoản không?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="button" class="btn btn-danger" onclick="confirmExit()">Thoát</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Scripts -->
+                <script>
+                    // Kích hoạt modal xác nhận trước khi đăng xuất
+                    function confirmLogout() {
+                        var logoutModal = new bootstrap.Modal(document.getElementById('confirmLogoutModal'), {
+                            keyboard: false
+                        });
+                        logoutModal.show();
+                        return false; // Prevent form submission until the user confirms
+                    }
+
+                    // Nếu người dùng xác nhận, form sẽ được submit
+                    function confirmExit() {
+                        document.getElementById('logoutForm').submit();  // Submit the form to log out
+                    }
+                </script>
+
+              
+
+            </ul>
+        </div>
+
+        <div class="col-md-5" style="margin-left: 30px;">
+            <form id="profile-form" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Fullname" class="form-control" placeholder="Please enter your full name." />
+                    <label asp-for="Input.Fullname" class="form-label">Full name</label>
+                    <span asp-validation-for="Input.Fullname" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number." />
+                    <label asp-for="Input.PhoneNumber" class="form-label">Phone number</label>
+                    <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

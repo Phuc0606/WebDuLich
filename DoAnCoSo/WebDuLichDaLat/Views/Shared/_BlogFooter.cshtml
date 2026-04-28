@@ -1,0 +1,82 @@
+﻿@* Views/Shared/_BlogFooter.cshtml *@
+<section class="bg-light mt-5 pt-5 pb-5">
+    <div class="container">
+        <!-- Newsletter -->
+        <div class="row mb-5">
+            <div class="col-md-8 offset-md-2 text-center">
+                <h4 class="mb-3 text-dark">Đăng ký nhận bản tin du lịch</h4>
+                <form class="row g-2 justify-content-center">
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" placeholder="Nhập tên của bạn">
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="email" class="form-control" placeholder="Nhập email của bạn">
+                    </div>
+                    <div class="col-sm-2">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer Content -->
+        <div class="row text-muted">
+            <div class="col-md-3 mb-4">
+                <h5 class="fw-bold text-dark">VNTRAVEL</h5>
+                <p class="small">
+                    Khám phá vẻ đẹp Đà Lạt - thành phố ngàn hoa, khí hậu ôn hòa quanh năm và những địa điểm du lịch hấp dẫn.
+                </p>
+                <div class="d-flex gap-2">
+                    <a href="#" class="text-muted fs-5"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-muted fs-5"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="text-muted fs-5"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-muted fs-5"><i class="bi bi-youtube"></i></a>
+                </div>
+            </div>
+
+            <div class="col-md-2 mb-4">
+                <h6 class="fw-bold text-dark">Giới thiệu</h6>
+                <ul class="list-unstyled small">
+                    <li><a href="#" class="text-muted">Về chúng tôi</a></li>
+                    <li><a href="#" class="text-muted">Dịch vụ</a></li>
+                    <li><a asp-controller="Blog" asp-action="Index" class="text-muted">Blog du lịch</a></li>
+                    <li><a asp-controller="Contact" asp-action="Index" class="text-muted">Liên hệ</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-2 mb-4">
+                <h6 class="fw-bold text-dark">Hỗ trợ</h6>
+                <ul class="list-unstyled small">
+                    <li><a href="#" class="text-muted">Câu hỏi thường gặp</a></li>
+                    <li><a href="#" class="text-muted">Hướng dẫn sử dụng</a></li>
+                    <li><a href="#" class="text-muted">Liên hệ hỗ trợ</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-2 mb-4">
+                <h6 class="fw-bold text-dark">Khám phá</h6>
+                <ul class="list-unstyled small">
+                    <li><a href="#" class="text-muted">Địa điểm nổi bật</a></li>
+                    <li><a href="#" class="text-muted">Ẩm thực địa phương</a></li>
+                    <li><a href="#" class="text-muted">Sự kiện sắp tới</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <h6 class="fw-bold text-dark">Khu vực nổi bật</h6>
+                <ul class="list-unstyled small">
+                    <li><a href="#" class="text-muted">Trung tâm thành phố</a></li>
+                    <li><a href="#" class="text-muted">Thung lũng Tình Yêu</a></li>
+                    <li><a href="#" class="text-muted">Langbiang</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="text-center text-muted small mt-4 border-top pt-3">
+            © 2025 VNTRAVEL. Bản quyền thuộc về nhóm phát triển. — Thiết kế dựa trên mẫu Furni của ThemeWagon.
+        </div>
+    </div>
+</section>

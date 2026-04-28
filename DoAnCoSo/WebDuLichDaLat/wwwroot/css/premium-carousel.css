@@ -1,0 +1,427 @@
+/* Premium Carousel Styles for Tourism Website */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gold-color: #ffd700;
+    --text-dark: #2c3e50;
+    --text-light: #ffffff;
+    --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15);
+    --border-radius: 20px;
+    --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Premium Typography */
+.premium-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    position: relative;
+    text-align: center;
+}
+
+.premium-section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+}
+
+.premium-section-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.2rem;
+    color: #6c757d;
+    text-align: center;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Premium Carousel Container */
+.premium-carousel-section {
+    padding: 100px 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.premium-carousel-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23000" opacity="0.02"/><circle cx="75" cy="75" r="1" fill="%23000" opacity="0.02"/><circle cx="50" cy="10" r="1" fill="%23000" opacity="0.02"/><circle cx="10" cy="90" r="1" fill="%23000" opacity="0.02"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+}
+
+/* 4.5 Cards Carousel */
+.premium-carousel-container {
+    position: relative;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.premium-carousel-wrapper {
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    position: relative;
+}
+
+.premium-carousel-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    gap: 24px;
+    padding: 20px 0;
+}
+
+/* Card width calculation for 4.5 cards display */
+.premium-destination-card {
+    flex: 0 0 calc((100% - 96px) / 4.5); /* 4.5 cards with gaps */
+    min-width: 280px;
+    background: var(--text-light);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition);
+    position: relative;
+    cursor: pointer;
+}
+
+.premium-destination-card:hover {
+    transform: translateY(-15px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* Card Image with Gradient Overlay */
+.premium-card-image {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+}
+
+.premium-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.premium-destination-card:hover .premium-card-image img {
+    transform: scale(1.08);
+}
+
+/* Premium Gradient Overlay */
+.premium-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.1) 40%,
+        rgba(0, 0, 0, 0.7) 100%
+    );
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+/* Premium Rating Badge */
+.premium-rating-badge {
+    align-self: flex-end;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 8px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-dark);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.premium-rating-badge i {
+    color: var(--gold-color);
+    font-size: 16px;
+}
+
+/* Card Title on Image */
+.premium-card-title-overlay {
+    color: var(--text-light);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Card Content */
+.premium-card-content {
+    padding: 24px;
+    background: var(--text-light);
+}
+
+.premium-card-location {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+.premium-card-location i {
+    color: #dc3545;
+    font-size: 16px;
+}
+
+.premium-card-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #e9ecef;
+}
+
+.premium-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.premium-stat-item i {
+    color: #28a745;
+    font-size: 14px;
+}
+
+/* Navigation Arrows */
+.premium-carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--text-light);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition);
+    z-index: 10;
+}
+
+.premium-carousel-nav:hover {
+    background: var(--primary-gradient);
+    color: var(--text-light);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.premium-carousel-nav.prev {
+    left: -25px;
+}
+
+.premium-carousel-nav.next {
+    right: -25px;
+}
+
+.premium-carousel-nav i {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Dots Indicator */
+.premium-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.premium-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #dee2e6;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+}
+
+.premium-dot.active {
+    background: var(--primary-gradient);
+    transform: scale(1.2);
+}
+
+.premium-dot:hover {
+    background: var(--secondary-gradient);
+    transform: scale(1.1);
+}
+
+/* View All Button */
+.premium-view-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--primary-gradient);
+    color: var(--text-light);
+    text-decoration: none;
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: var(--transition);
+    margin-top: 40px;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.premium-view-all-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    color: var(--text-light);
+    text-decoration: none;
+}
+
+.premium-view-all-btn i {
+    transition: transform 0.3s ease;
+}
+
+.premium-view-all-btn:hover i {
+    transform: translateX(5px);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .premium-destination-card {
+        flex: 0 0 calc((100% - 72px) / 3.5); /* 3.5 cards on medium screens */
+    }
+}
+
+@media (max-width: 992px) {
+    .premium-destination-card {
+        flex: 0 0 calc((100% - 48px) / 2.5); /* 2.5 cards on tablets */
+    }
+    
+    .premium-carousel-nav {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .premium-carousel-nav.prev {
+        left: -22px;
+    }
+    
+    .premium-carousel-nav.next {
+        right: -22px;
+    }
+}
+
+@media (max-width: 768px) {
+    .premium-destination-card {
+        flex: 0 0 calc((100% - 24px) / 1.2); /* 1.2 cards on mobile */
+        min-width: 260px;
+    }
+    
+    .premium-carousel-section {
+        padding: 60px 0;
+    }
+    
+    .premium-section-title {
+        font-size: 2rem;
+    }
+    
+    .premium-section-subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .premium-carousel-nav {
+        display: none; /* Hide arrows on mobile, use swipe */
+    }
+}
+
+/* Loading Animation */
+.premium-carousel-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+}
+
+.premium-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e9ecef;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Smooth Fade In Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.premium-destination-card {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.premium-destination-card:nth-child(1) { animation-delay: 0.1s; }
+.premium-destination-card:nth-child(2) { animation-delay: 0.2s; }
+.premium-destination-card:nth-child(3) { animation-delay: 0.3s; }
+.premium-destination-card:nth-child(4) { animation-delay: 0.4s; }
+.premium-destination-card:nth-child(5) { animation-delay: 0.5s; }
+
+/* Touch/Swipe Support */
+.premium-carousel-track {
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* High DPI Display Support */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .premium-destination-card {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    }
+    
+    .premium-destination-card:hover {
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+    }
+}

@@ -1,0 +1,40 @@
+﻿@model IEnumerable<WebDuLichDaLat.Models.TouristPlace>
+
+
+<style>
+    h2, .table th, .table td {
+        color: white !important;
+</style>
+
+<h2 class="text-center">Quản lý địa điểm</h2>
+
+<a asp-action="Add" class="btn btn-primary mb-3">Thêm Địa điểm</a>
+
+<table class="table table-bordered table-white-text">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Tên</th>           
+            <th>Danh mục</th>
+            <th>Địa điểm</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var touristPlace in Model)
+        {
+            <tr>
+                <td>@touristPlace.Id</td>
+                <td>@touristPlace.Name</td>
+                <td>@touristPlace.Category?.Name</td>
+                <td>@touristPlace.Region?.Name</td>
+                <td>
+                    <a asp-action="Update" asp-route-id="@touristPlace.Id" class="btn btn-sm btn-warning">Sửa</a>
+                    <form asp-action="Delete" asp-route-id="@touristPlace.Id" method="post" style="display:inline" onsubmit="return confirm('Bạn có chắc muốn xoá không?');">
+                        <button class="btn btn-sm btn-danger">Xoá</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

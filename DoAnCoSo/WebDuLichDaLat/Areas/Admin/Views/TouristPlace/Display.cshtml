@@ -1,0 +1,207 @@
+﻿@model WebDuLichDaLat.Models.TouristPlace
+
+@{
+    var allImages = new List<string>();
+    if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        allImages.Add(Model.ImageUrl);
+    }
+    if (Model.ImageUrls != null && Model.ImageUrls.Any())
+    {
+        allImages.AddRange(Model.ImageUrls);
+    }
+
+    double avgRating = ViewBag.AverageRating ?? 0;
+    int ratingCount = ViewBag.RatingCount ?? 0;
+    int rounded = (int)Math.Round(avgRating);
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+<h2 class="mb-4 text-center">Chi tiết Địa điểm</h2>
+
+<div class="card shadow-sm bg-white rounded" style="margin: auto;">
+    <div class="row g-4 align-items-center p-3">
+
+        <!-- Ảnh Địa điểm -->
+        <div class="col-md-5 text-center">
+            @if (allImages.Any())
+            {
+                <div id="touristPlaceImagesCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000" style="max-height: 420px;">
+                    <div class="carousel-indicators">
+                        @for (int i = 0; i < allImages.Count; i++)
+                        {
+                            <button type="button" data-bs-target="#touristPlaceImagesCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @(i + 1)"></button>
+                        }
+                    </div>
+                    <div class="carousel-inner" style="max-height: 420px;">
+                        @for (int i = 0; i < allImages.Count; i++)
+                        {
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <img src="@allImages[i]" alt="Hình ảnh Địa điểm @(i + 1)" class="d-block w-100 rounded mx-auto" style="max-height: 420px; object-fit: contain; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+                            </div>
+                        }
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#touristPlaceImagesCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#touristPlaceImagesCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="text-muted fst-italic fs-4">Không có hình ảnh</div>
+            }
+        </div>
+
+        <!-- Thông tin Địa điểm -->
+        <div class="col-md-7 fs-5">
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Tên Địa điểm:</dt>
+                <dd class="col-sm-8">@Model.Name</dd>
+
+                <dt class="col-sm-4 fw-bold">Địa điểm:</dt>
+                <dd class="col-sm-8">@((Model.Region != null) ? Model.Region.Name : "Chưa có Địa điểm")</dd>
+
+
+
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <dt class="col-sm-4 fw-bold">Mô tả:</dt>
+                    <dd class="col-sm-8">@Model.Description</dd>
+                }
+
+                <dt class="col-sm-4 fw-bold">Danh mục:</dt>
+                <dd class="col-sm-8">@((Model.Category != null) ? Model.Category.Name : "Chưa có danh mục")</dd>
+
+                <!-- Trung bình Đánh giá -->
+                <dt class="col-sm-4 fw-bold">Đánh giá:</dt>
+                <dd class="col-sm-8">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= rounded)
+                        {
+                            <i class="fa-solid fa-star text-warning"></i>
+                        }
+                        else
+                        {
+                            <i class="fa-regular fa-star text-muted"></i>
+                        }
+                    }
+                    <span class="ms-2 text-muted">(@avgRating.ToString("0.0")/5 từ @ratingCount lượt)</span>
+                </dd>
+            </dl>
+
+            <!-- Nút hành động -->
+            <div class="mt-4 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3 flex-wrap">
+                <form id="form-favorite" asp-controller="Favorite" asp-action="Add" method="post">
+                    <input type="hidden" name="touristPlaceId" value="@Model.Id" />
+                    <button type="submit" class="btn btn-outline-danger btn-lg" title="Thêm vào yêu thích">
+                        <i class="bi bi-heart-fill"></i>
+                    </button>
+                </form>
+
+                <form id="form-cart" asp-controller="Cart" asp-action="AddToCart" method="post" class="d-flex align-items-center gap-3 flex-wrap">
+                    <input type="hidden" name="touristPlaceId" value="@Model.Id" />
+                    <button type="submit" class="btn btn-success btn-lg px-4">Tính toán</button>
+                    <a asp-action="Index" class="btn btn-outline-primary btn-lg px-4">Quay lại danh sách</a>
+                </form>
+            </div>
+
+            <!-- Form đánh giá -->
+            <div class="mt-4">
+                <form id="form-rating" asp-controller="TouristPlace" asp-action="Rate" method="post" class="d-flex gap-3 align-items-center">
+                    <input type="hidden" name="touristPlaceId" value="@Model.Id" />
+                    <input type="hidden" name="rating" id="ratingInput" value="0" />
+                    <label class="form-label mb-0">Đánh giá Địa điểm:</label>
+                    <div id="starRating" class="text-warning fs-3" style="cursor: pointer;">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="fa-regular fa-star" data-value="@i"></i>
+                        }
+                    </div>
+                    <button type="submit" class="btn btn-warning">Gửi đánh giá</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ReviewContent))
+{
+    <div class="review-content mt-4">
+        @Html.Raw(Model.ReviewContent)
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const formFavorite = document.getElementById('form-favorite');
+            if (formFavorite) {
+                formFavorite.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const formData = new FormData(formFavorite);
+                    const response = await fetch(formFavorite.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    alert(response.ok ? "Đã thêm vào yêu thích!" : "Lỗi khi thêm vào yêu thích.");
+                });
+            }
+
+            const formCart = document.getElementById('form-cart');
+            if (formCart) {
+                formCart.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const formData = new FormData(formCart);
+                    const response = await fetch(formCart.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    alert(response.ok ? "Địa điểm đã thêm vào tính toán chi phí!" : "Có lỗi xảy ra khi tính vào chi phí.");
+                });
+            }
+
+            const stars = document.querySelectorAll('#starRating i');
+            const ratingInput = document.getElementById('ratingInput');
+
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    const rating = parseInt(this.getAttribute('data-value'));
+                    ratingInput.value = rating;
+                    stars.forEach(s => {
+                        s.classList.remove('fa-solid');
+                        s.classList.add('fa-regular');
+                    });
+                    for (let i = 0; i < rating; i++) {
+                        stars[i].classList.remove('fa-regular');
+                        stars[i].classList.add('fa-solid');
+                    }
+                });
+            });
+
+            const formRating = document.getElementById('form-rating');
+            if (formRating) {
+                formRating.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const formData = new FormData(formRating);
+                    const response = await fetch(formRating.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (response.ok) {
+                        alert("Cảm ơn bạn đã đánh giá!");
+                        location.reload();
+                    } else {
+                        alert("Lỗi khi gửi đánh giá.");
+                    }
+                });
+            }
+        });
+    </script>
+}

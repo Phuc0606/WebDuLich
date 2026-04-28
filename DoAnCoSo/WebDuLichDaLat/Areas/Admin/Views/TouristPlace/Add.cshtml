@@ -1,0 +1,142 @@
+﻿@model WebDuLichDaLat.Models.TouristPlace
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+<style>
+    h1, h2, label, th, td, .form-check-label {
+        color: white !important;
+    }
+
+    /* GỠ bỏ áp dụng màu trắng cho input/select/textarea */
+    /* KHÔNG chỉnh .form-control hay .form-select ở đây */
+
+    /* Nếu cần sửa màu nền preview */
+    #preview-box {
+        background-color: #f9f9f9;
+        color: black;
+    }
+</style>
+
+
+
+<h1 class="text-center">Thêm Địa điểm</h1>
+
+<form asp-area="Admin" asp-controller="TouristPlace" asp-action="Add" enctype="multipart/form-data" style="padding-bottom: 60px;">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <!-- touristPlaceId -->
+    <div class="form-group mb-3">
+        <label asp-for="Id">Mã Địa điểm</label>
+        <input asp-for="Id" class="form-control" maxlength="6" />
+        <span asp-validation-for="Id" class="text-danger"></span>
+    </div>
+
+    <!-- touristPlaceName -->
+    <div class="form-group mb-3">
+        <label asp-for="Name">Tên Địa điểm</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <!-- ImageUrl -->
+    <div class="form-group mb-3">
+        <label asp-for="ImageUrl">Ảnh Địa điểm</label>
+        <input type="file" asp-for="ImageUrl" class="form-control" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="ImageUrls">Ảnh phụ</label>
+        <input type="file" asp-for="ImageUrls" class="form-control" multiple />
+    </div>
+
+    <!-- Region -->
+    <div class="form-group mb-3">
+        <label asp-for="RegionId">Chọn vị trí</label>
+        <select asp-for="RegionId" class="form-control" asp-items="ViewBag.Regions">
+            <option value="">-- Chọn vị trí --</option>
+        </select>
+        <span asp-validation-for="RegionId" class="text-danger"></span>
+    </div>
+
+    <!-- Latitude -->
+    <div class="form-group mb-3">
+        <label asp-for="Latitude">Vĩ độ (Latitude)</label>
+        <input asp-for="Latitude" class="form-control" step="any" />
+        <span asp-validation-for="Latitude" class="text-danger"></span>
+    </div>
+
+    <!-- Longitude -->
+    <div class="form-group mb-3">
+        <label asp-for="Longitude">Kinh độ (Longitude)</label>
+        <input asp-for="Longitude" class="form-control" step="any" />
+        <span asp-validation-for="Longitude" class="text-danger"></span>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group mb-3">
+        <label asp-for="Description">Mô tả</label>
+        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <!-- CategoryId -->
+    <div class="form-group mb-3">
+        <label asp-for="CategoryId">Loại Địa điểm</label>
+        <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories">
+            <option value="">-- Chọn danh mục --</option>
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+
+    <!-- Review -->
+    <div class="form-group mb-3">
+        <label asp-for="ReviewContent">Nội dung chi tiết / Review</label>
+        <textarea asp-for="ReviewContent" class="form-control" id="reviewEditor" rows="10"></textarea>
+        <span asp-validation-for="ReviewContent" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <button type="button" class="btn btn-outline-secondary text-white" onclick="previewContent()">👁 Xem trước nội dung</button>
+        <button type="submit" class="btn btn-primary text-white">Thêm Địa điểm</button>
+    </div>
+
+    <div id="preview-box" class="border p-3 rounded mt-3" style="display:none; background-color: #f9f9f9;"></div>
+</form>
+
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <!-- CKEditor -->
+    <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+    <script>
+        // Khởi tạo CKEditor
+        const editor = CKEDITOR.replace('reviewEditor');
+
+        // Tự động lưu nháp mỗi 30s
+        setInterval(() => {
+            const data = editor.getData();
+            localStorage.setItem('touristPlace_review_draft', data);
+        }, 30000); // 30 giây
+
+        // Khôi phục bản nháp nếu có
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('touristPlace_review_draft');
+            if (saved && !editor.getData()) {
+                if (confirm('Khôi phục nội dung đã lưu tự động?')) {
+                    editor.setData(saved);
+                }
+            }
+        });
+
+        // Xem trước nội dung khi bấm nút
+        function previewContent() {
+            const content = editor.getData();
+            const previewDiv = document.getElementById('preview-box');
+            previewDiv.innerHTML = '<h4>Xem trước nội dung:</h4>' + content;
+            previewDiv.style.display = 'block';
+        }
+    </script>
+}
+
+

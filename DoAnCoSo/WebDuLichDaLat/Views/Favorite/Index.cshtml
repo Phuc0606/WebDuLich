@@ -1,0 +1,35 @@
+﻿@model List<WebDuLichDaLat.Models.Favorite>
+
+<h2 class="text-white">Địa điểm bạn yêu thích</h2>
+
+@if (!Model.Any())
+{
+    <p class="text-white">Bạn chưa yêu thích Địa điểm nào.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <a asp-controller="TouristPlace" asp-action="Display" asp-route-id="@item.TouristPlace.Id">
+                        <img src="@item.TouristPlace.ImageUrl" class="card-img-top" style=" object-fit: cover;" />
+                    </a>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">
+                            <a asp-controller="TouristPlace" asp-action="Display" asp-route-id="@item.TouristPlace.Id" class="text-decoration-none text-dark">
+                                @item.TouristPlace.Name
+                            </a>
+                        </h5>
+                        <form method="post" asp-action="Remove" asp-controller="Favorite" class="mt-auto">
+                            <input type="hidden" name="touristPlaceId" value="@item.TouristPlaceId" />
+                            <button class="btn btn-sm btn-outline-danger w-100">Xóa khỏi yêu thích</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+}

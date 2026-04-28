@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Premium Carousel - Du lịch Đà Lạt</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Premium Carousel CSS -->
+    <link rel="stylesheet" href="css/premium-carousel.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+        }
+        
+        .demo-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .demo-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .demo-info {
+            background: white;
+            padding: 40px;
+            margin: 40px 0;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list i {
+            color: #28a745;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Header -->
+    <div class="demo-header">
+        <div class="container">
+            <h1 class="demo-title">Premium Carousel Demo</h1>
+            <p class="demo-subtitle">Giao diện carousel 4.5 hình chuyên nghiệp cho website du lịch</p>
+        </div>
+    </div>
+
+    <!-- Demo Info -->
+    <div class="container">
+        <div class="demo-info">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>✨ Tính năng nổi bật</h3>
+                    <ul class="feature-list">
+                        <li><i class="bi bi-check-circle-fill"></i> Hiển thị 4.5 hình (lộ nửa hình thứ 5)</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Typography cao cấp (Playfair Display + Inter)</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Gradient overlay chuyên nghiệp</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Rating với ngôi sao vàng</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Hover effect mượt mà</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Auto-play và navigation</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h3>📱 Responsive Design</h3>
+                    <ul class="feature-list">
+                        <li><i class="bi bi-display"></i> Desktop: 4.5 cards</li>
+                        <li><i class="bi bi-laptop"></i> Tablet: 2.5 cards</li>
+                        <li><i class="bi bi-phone"></i> Mobile: 1.2 cards</li>
+                        <li><i class="bi bi-hand-index"></i> Touch/Swipe support</li>
+                        <li><i class="bi bi-mouse"></i> Mouse drag support</li>
+                        <li><i class="bi bi-keyboard"></i> Keyboard navigation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Destinations Carousel -->
+    <section class="premium-carousel-section">
+        <div class="container">
+            <!-- Section Header -->
+            <div class="text-center mb-5">
+                <h2 class="premium-section-title">Điểm đến phổ biến</h2>
+                <p class="premium-section-subtitle">
+                    Khám phá những địa điểm được yêu thích nhất tại Đà Lạt với trải nghiệm tuyệt vời
+                </p>
+            </div>
+
+            <!-- Premium Carousel Container -->
+            <div class="premium-carousel-container">
+                <div class="premium-carousel-wrapper">
+                    <div class="premium-carousel-track">
+                        <!-- Card 1 -->
+                        <div class="premium-destination-card">
+                            <div class="premium-card-image">
+                                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&crop=center" 
+                                     alt="Thung Lũng Tình Yêu" 
+                                     loading="lazy">
+                                
+                                <div class="premium-card-overlay">
+                                    <div class="premium-rating-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>4.8</span>
+                                    </div>
+                                    
+                                    <h3 class="premium-card-title-overlay">Thung Lũng Tình Yêu</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="premium-card-content">
+                                <div class="premium-card-location">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>Phường 4, Đà Lạt</span>
+                                </div>
+                                
+                                <div class="premium-card-stats">
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>856 lượt xem</span>
+                                    </div>
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-heart-fill"></i>
+                                        <span>142</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="premium-destination-card">
+                            <div class="premium-card-image">
+                                <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop&crop=center" 
+                                     alt="Hồ Xuân Hương" 
+                                     loading="lazy">
+                                
+                                <div class="premium-card-overlay">
+                                    <div class="premium-rating-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>4.9</span>
+                                    </div>
+                                    
+                                    <h3 class="premium-card-title-overlay">Hồ Xuân Hương</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="premium-card-content">
+                                <div class="premium-card-location">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>Phường 1, Đà Lạt</span>
+                                </div>
+                                
+                                <div class="premium-card-stats">
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>723 lượt xem</span>
+                                    </div>
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-heart-fill"></i>
+                                        <span>198</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="premium-destination-card">
+                            <div class="premium-card-image">
+                                <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&crop=center" 
+                                     alt="Dinh Bảo Đại" 
+                                     loading="lazy">
+                                
+                                <div class="premium-card-overlay">
+                                    <div class="premium-rating-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>4.7</span>
+                                    </div>
+                                    
+                                    <h3 class="premium-card-title-overlay">Dinh Bảo Đại</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="premium-card-content">
+                                <div class="premium-card-location">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>Phường 2, Đà Lạt</span>
+                                </div>
+                                
+                                <div class="premium-card-stats">
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>634 lượt xem</span>
+                                    </div>
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-heart-fill"></i>
+                                        <span>89</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4 -->
+                        <div class="premium-destination-card">
+                            <div class="premium-card-image">
+                                <img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&h=600&fit=crop&crop=center" 
+                                     alt="Chợ Đà Lạt" 
+                                     loading="lazy">
+                                
+                                <div class="premium-card-overlay">
+                                    <div class="premium-rating-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>4.5</span>
+                                    </div>
+                                    
+                                    <h3 class="premium-card-title-overlay">Chợ Đà Lạt</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="premium-card-content">
+                                <div class="premium-card-location">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>Phường 3, Đà Lạt</span>
+                                </div>
+                                
+                                <div class="premium-card-stats">
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>445 lượt xem</span>
+                                    </div>
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-heart-fill"></i>
+                                        <span>76</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 5 (Half visible) -->
+                        <div class="premium-destination-card">
+                            <div class="premium-card-image">
+                                <img src="https://images.unsplash.com/photo-1501436513145-30f24e19fcc4?w=800&h=600&fit=crop&crop=center" 
+                                     alt="Ga Đà Lạt" 
+                                     loading="lazy">
+                                
+                                <div class="premium-card-overlay">
+                                    <div class="premium-rating-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>4.6</span>
+                                    </div>
+                                    
+                                    <h3 class="premium-card-title-overlay">Ga Đà Lạt</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="premium-card-content">
+                                <div class="premium-card-location">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>Phường 5, Đà Lạt</span>
+                                </div>
+                                
+                                <div class="premium-card-stats">
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>567 lượt xem</span>
+                                    </div>
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-heart-fill"></i>
+                                        <span>123</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 6 -->
+                        <div class="premium-destination-card">
+                            <div class="premium-card-image">
+                                <img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop&crop=center" 
+                                     alt="Thiền Viện Trúc Lâm" 
+                                     loading="lazy">
+                                
+                                <div class="premium-card-overlay">
+                                    <div class="premium-rating-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>5.0</span>
+                                    </div>
+                                    
+                                    <h3 class="premium-card-title-overlay">Thiền Viện Trúc Lâm</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="premium-card-content">
+                                <div class="premium-card-location">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>Phường 6, Đà Lạt</span>
+                                </div>
+                                
+                                <div class="premium-card-stats">
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>892 lượt xem</span>
+                                    </div>
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-heart-fill"></i>
+                                        <span>234</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 7 -->
+                        <div class="premium-destination-card">
+                            <div class="premium-card-image">
+                                <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop&crop=center" 
+                                     alt="Đồi Chè Cầu Đất" 
+                                     loading="lazy">
+                                
+                                <div class="premium-card-overlay">
+                                    <div class="premium-rating-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>4.4</span>
+                                    </div>
+                                    
+                                    <h3 class="premium-card-title-overlay">Đồi Chè Cầu Đất</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="premium-card-content">
+                                <div class="premium-card-location">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>Phường 7, Đà Lạt</span>
+                                </div>
+                                
+                                <div class="premium-card-stats">
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>378 lượt xem</span>
+                                    </div>
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-heart-fill"></i>
+                                        <span>95</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 8 -->
+                        <div class="premium-destination-card">
+                            <div class="premium-card-image">
+                                <img src="https://images.unsplash.com/photo-1464822759844-d150baec0494?w=800&h=600&fit=crop&crop=center" 
+                                     alt="Vườn Hoa Thành Phố" 
+                                     loading="lazy">
+                                
+                                <div class="premium-card-overlay">
+                                    <div class="premium-rating-badge">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span>4.3</span>
+                                    </div>
+                                    
+                                    <h3 class="premium-card-title-overlay">Vườn Hoa Thành Phố</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="premium-card-content">
+                                <div class="premium-card-location">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>Phường 8, Đà Lạt</span>
+                                </div>
+                                
+                                <div class="premium-card-stats">
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>512 lượt xem</span>
+                                    </div>
+                                    <div class="premium-stat-item">
+                                        <i class="bi bi-heart-fill"></i>
+                                        <span>167</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View All Button -->
+            <div class="text-center">
+                <a href="#" class="premium-view-all-btn">
+                    <span>Khám phá tất cả địa điểm</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Usage Instructions -->
+    <div class="container">
+        <div class="demo-info">
+            <h3>🚀 Cách sử dụng</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>1. Include CSS và JS:</h5>
+                    <pre><code>&lt;link rel="stylesheet" href="css/premium-carousel.css"&gt;
+&lt;script src="js/premium-carousel.js"&gt;&lt;/script&gt;</code></pre>
+                </div>
+                <div class="col-md-6">
+                    <h5>2. Sử dụng Partial View:</h5>
+                    <pre><code>@Html.Partial("_PremiumDestinationsCarousel", Model)</code></pre>
+                </div>
+            </div>
+            
+            <h5 class="mt-4">3. Tính năng điều khiển:</h5>
+            <ul class="feature-list">
+                <li><i class="bi bi-arrow-left-right"></i> Mũi tên trái/phải để điều hướng</li>
+                <li><i class="bi bi-circle-fill"></i> Dots indicator để nhảy đến slide cụ thể</li>
+                <li><i class="bi bi-hand-index"></i> Vuốt trái/phải trên mobile</li>
+                <li><i class="bi bi-play-circle"></i> Auto-play sau 6 giây</li>
+                <li><i class="bi bi-pause-circle"></i> Tạm dừng khi hover</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Premium Carousel JavaScript -->
+    <script src="js/premium-carousel.js"></script>
+</body>
+</html>

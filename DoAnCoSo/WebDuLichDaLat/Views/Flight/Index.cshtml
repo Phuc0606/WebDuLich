@@ -1,0 +1,154 @@
+@{
+    ViewData["Title"] = "Tìm kiếm chuyến bay";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg" style="background-color: #1a1a1a; border-radius: 15px;">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4" style="color: #ff6b9d; font-weight: 700;">
+                        <i class="bi bi-airplane"></i> Tìm kiếm chuyến bay
+                    </h2>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.Error
+                        </div>
+                    }
+
+                    <form asp-action="Search" method="post" id="flightSearchForm">
+                        <div class="row">
+                            <!-- Sân bay đi -->
+                            <div class="col-md-6 mb-3">
+                                <label for="originCode" class="form-label" style="color: white; font-weight: 600;">
+                                    <i class="bi bi-geo-alt-fill"></i> Sân bay đi *
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="originCode" 
+                                       name="originCode" 
+                                       value="@ViewBag.OriginCode"
+                                       placeholder="VD: HAN, SGN" 
+                                       required
+                                       style="background-color: #2a2a2a; border: 1px solid #444; color: white; border-radius: 8px; padding: 12px;">
+                                <small class="form-text" style="color: rgba(255,255,255,0.6);">
+                                    Mã sân bay (3 ký tự): HAN (Hà Nội), SGN (TP.HCM), DAD (Đà Nẵng)
+                                </small>
+                            </div>
+
+                            <!-- Sân bay đến -->
+                            <div class="col-md-6 mb-3">
+                                <label for="destinationCode" class="form-label" style="color: white; font-weight: 600;">
+                                    <i class="bi bi-geo-alt"></i> Sân bay đến *
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="destinationCode" 
+                                       name="destinationCode" 
+                                       value="@ViewBag.DestinationCode"
+                                       placeholder="VD: DLI" 
+                                       required
+                                       style="background-color: #2a2a2a; border: 1px solid #444; color: white; border-radius: 8px; padding: 12px;">
+                                <small class="form-text" style="color: rgba(255,255,255,0.6);">
+                                    Mã sân bay: DLI (Đà Lạt)
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Ngày khởi hành -->
+                            <div class="col-md-6 mb-3">
+                                <label for="departureDate" class="form-label" style="color: white; font-weight: 600;">
+                                    <i class="bi bi-calendar-event"></i> Ngày khởi hành *
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="departureDate" 
+                                       name="departureDate" 
+                                       value="@ViewBag.DepartureDate"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                       required
+                                       style="background-color: #2a2a2a; border: 1px solid #444; color: white; border-radius: 8px; padding: 12px;">
+                            </div>
+
+                            <!-- Số người lớn -->
+                            <div class="col-md-6 mb-3">
+                                <label for="adults" class="form-label" style="color: white; font-weight: 600;">
+                                    <i class="bi bi-people"></i> Số người lớn *
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="adults" 
+                                       name="adults" 
+                                       value="@(ViewBag.Adults ?? 1)"
+                                       min="1" 
+                                       max="9" 
+                                       required
+                                       style="background-color: #2a2a2a; border: 1px solid #444; color: white; border-radius: 8px; padding: 12px;">
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary" 
+                                    style="background-color: #ff6b9d; border: none; border-radius: 8px; padding: 12px; font-weight: 600; font-size: 18px;">
+                                <i class="bi bi-search"></i> Tìm kiếm chuyến bay
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Thông tin hỗ trợ -->
+                    <div class="mt-4 p-3" style="background-color: rgba(255,107,157,0.1); border-radius: 10px;">
+                        <h6 style="color: #ff6b9d; font-weight: 600;">
+                            <i class="bi bi-info-circle"></i> Lưu ý:
+                        </h6>
+                        <ul class="mb-0" style="color: rgba(255,255,255,0.8); font-size: 14px;">
+                            <li>Mã sân bay phải là 3 ký tự (VD: HAN, SGN, DLI)</li>
+                            <li>Ngày khởi hành không thể là ngày trong quá khứ</li>
+                            <li>Kết quả tìm kiếm có thể mất vài giây</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        background-color: #2a2a2a !important;
+        border-color: #ff6b9d !important;
+        color: white !important;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 157, 0.25);
+    }
+
+    .btn-primary:hover {
+        background-color: #ff5a8a !important;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4);
+    }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

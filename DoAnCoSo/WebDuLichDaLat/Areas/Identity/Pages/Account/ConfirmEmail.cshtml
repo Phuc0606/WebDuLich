@@ -1,0 +1,10 @@
+﻿@page
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = "Xác nhận email";
+}
+
+<h2 class="text-white">@ViewData["Title"]</h2>
+<div class="alert alert-info text-dark">
+    @Model.StatusMessage
+</div>

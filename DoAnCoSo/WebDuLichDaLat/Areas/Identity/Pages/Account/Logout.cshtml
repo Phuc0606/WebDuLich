@@ -1,0 +1,20 @@
+﻿@page
+@using Microsoft.AspNetCore.Identity
+@using WebDuLichDaLat.Models
+@inject SignInManager<User> SignInManager
+@inject ILogger<LogoutModel> Logger
+
+@functions {
+    public async Task<IActionResult> LogoutAndRedirect()
+    {
+        await SignInManager.SignOutAsync();
+        Logger.LogInformation("User logged out.");
+        Response.Redirect("/");
+        return new EmptyResult();
+    }
+}
+
+@{
+    Layout = null;
+    var result = await LogoutAndRedirect();
+}

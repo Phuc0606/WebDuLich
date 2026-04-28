@@ -1,0 +1,275 @@
+@model List<WebDuLichDaLat.Models.TouristPlace>
+
+@{
+    var displayPlaces = Model?.Take(8) ?? new List<WebDuLichDaLat.Models.TouristPlace>();
+    
+    string GetImageUrl(string imageUrl)
+    {
+        if (string.IsNullOrEmpty(imageUrl))
+            return "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop";
+        
+        if (imageUrl.StartsWith("http"))
+            return imageUrl;
+        
+        return $"/Images/{System.IO.Path.GetFileName(imageUrl)}";
+    }
+    
+    string GetRandomRating()
+    {
+        var ratings = new[] { "4.2", "4.5", "4.7", "4.8", "4.9", "5.0" };
+        return ratings[new Random().Next(ratings.Length)];
+    }
+}
+
+<!-- Simple Premium Carousel -->
+<section style="padding: 80px 0; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 700; color: #2c3e50; margin-bottom: 1rem;">
+                Điểm đến phổ biến
+            </h2>
+            <p style="font-size: 1.2rem; color: #6c757d; margin-bottom: 3rem;">
+                Khám phá những địa điểm được yêu thích nhất tại Đà Lạt
+            </p>
+        </div>
+
+        <!-- Carousel Container -->
+        <div class="simple-carousel-container" style="position: relative; overflow: hidden; border-radius: 20px;">
+            <div class="simple-carousel-track" style="display: flex; gap: 24px; transition: transform 0.6s ease; padding: 20px 0;">
+                
+                @if (displayPlaces.Any())
+                {
+                    @foreach (var place in displayPlaces)
+                    {
+                        <div class="simple-card" style="flex: 0 0 calc((100% - 96px) / 4.5); min-width: 280px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transition: all 0.4s ease; cursor: pointer;">
+                            <a href="@Url.Action("Display", "TouristPlace", new { id = place.Id })" style="text-decoration: none; color: inherit;">
+                                <div style="position: relative; height: 240px; overflow: hidden;">
+                                    <img src="@GetImageUrl(place.ImageUrl)" 
+                                         alt="@place.Name" 
+                                         style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;"
+                                         onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop'">
+                                    
+                                    <!-- Overlay -->
+                                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.7) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 20px;">
+                                        <!-- Rating -->
+                                        <div style="align-self: flex-end; background: rgba(255,255,255,0.95); padding: 8px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px;">
+                                            <i class="bi bi-star-fill" style="color: #ffd700;"></i>
+                                            <span>@GetRandomRating()</span>
+                                        </div>
+                                        
+                                        <!-- Title -->
+                                        <h3 style="color: white; font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+                                            @place.Name
+                                        </h3>
+                                    </div>
+                                </div>
+                                
+                                <!-- Content -->
+                                <div style="padding: 24px;">
+                                    @if (place.Region != null)
+                                    {
+                                        <div style="display: flex; align-items: center; gap: 8px; color: #6c757d; font-size: 14px; margin-bottom: 12px;">
+                                            <i class="bi bi-geo-alt-fill" style="color: #dc3545;"></i>
+                                            <span>@place.Region.Name, Đà Lạt</span>
+                                        </div>
+                                    }
+                                    
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e9ecef;">
+                                        <div style="display: flex; align-items: center; gap: 6px; color: #6c757d; font-size: 13px;">
+                                            <i class="bi bi-eye-fill" style="color: #28a745;"></i>
+                                            <span>@(new Random().Next(150, 999)) lượt xem</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 6px; color: #6c757d; font-size: 13px;">
+                                            <i class="bi bi-heart-fill" style="color: #dc3545;"></i>
+                                            <span>@(new Random().Next(50, 200))</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    @* Demo cards *@
+                    var demoImages = new[] {
+                        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1501436513145-30f24e19fcc4?w=800&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=600&fit=crop"
+                    };
+                    var demoNames = new[] { "Thung Lũng Tình Yêu", "Hồ Xuân Hương", "Dinh Bảo Đại", "Chợ Đà Lạt", "Ga Đà Lạt", "Thiền Viện Trúc Lâm" };
+                    
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        <div class="simple-card" style="flex: 0 0 calc((100% - 96px) / 4.5); min-width: 280px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transition: all 0.4s ease; cursor: pointer;">
+                            <a href="@Url.Action("Index", "TouristPlace")" style="text-decoration: none; color: inherit;">
+                                <div style="position: relative; height: 240px; overflow: hidden;">
+                                    <img src="@demoImages[i % demoImages.Length]" 
+                                         alt="@demoNames[i % demoNames.Length]" 
+                                         style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;">
+                                    
+                                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.7) 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 20px;">
+                                        <div style="align-self: flex-end; background: rgba(255,255,255,0.95); padding: 8px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px;">
+                                            <i class="bi bi-star-fill" style="color: #ffd700;"></i>
+                                            <span>@GetRandomRating()</span>
+                                        </div>
+                                        
+                                        <h3 style="color: white; font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+                                            @demoNames[i % demoNames.Length]
+                                        </h3>
+                                    </div>
+                                </div>
+                                
+                                <div style="padding: 24px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; color: #6c757d; font-size: 14px; margin-bottom: 12px;">
+                                        <i class="bi bi-geo-alt-fill" style="color: #dc3545;"></i>
+                                        <span>Phường @(i + 1), Đà Lạt</span>
+                                    </div>
+                                    
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e9ecef;">
+                                        <div style="display: flex; align-items: center; gap: 6px; color: #6c757d; font-size: 13px;">
+                                            <i class="bi bi-eye-fill" style="color: #28a745;"></i>
+                                            <span>@(new Random().Next(150, 999)) lượt xem</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 6px; color: #6c757d; font-size: 13px;">
+                                            <i class="bi bi-heart-fill" style="color: #dc3545;"></i>
+                                            <span>@(new Random().Next(50, 200))</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                }
+            </div>
+            
+            <!-- Navigation Arrows -->
+            <button class="carousel-nav prev" onclick="moveCarousel(-1)" style="position: absolute; left: -25px; top: 50%; transform: translateY(-50%); background: white; border: none; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transition: all 0.3s ease; z-index: 10;">
+                <i class="bi bi-chevron-left" style="font-size: 18px; font-weight: bold;"></i>
+            </button>
+            
+            <button class="carousel-nav next" onclick="moveCarousel(1)" style="position: absolute; right: -25px; top: 50%; transform: translateY(-50%); background: white; border: none; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transition: all 0.3s ease; z-index: 10;">
+                <i class="bi bi-chevron-right" style="font-size: 18px; font-weight: bold;"></i>
+            </button>
+        </div>
+
+        <!-- View All Button -->
+        <div class="text-center mt-5">
+            <a href="@Url.Action("Index", "TouristPlace")" style="display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 14px 28px; border-radius: 30px; font-weight: 600; font-size: 16px; transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);">
+                <span>Khám phá tất cả địa điểm</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Simple Carousel JavaScript -->
+<script>
+let currentIndex = 0;
+const cardsToShow = 4.5;
+
+function moveCarousel(direction) {
+    const track = document.querySelector('.simple-carousel-track');
+    const cards = track.children;
+    const maxIndex = Math.max(0, cards.length - Math.floor(cardsToShow));
+    
+    currentIndex += direction;
+    
+    if (currentIndex < 0) currentIndex = 0;
+    if (currentIndex > maxIndex) currentIndex = maxIndex;
+    
+    const cardWidth = 100 / cardsToShow;
+    const translateX = -(currentIndex * cardWidth);
+    
+    track.style.transform = `translateX(${translateX}%)`;
+}
+
+// Hover effects
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.simple-card');
+    
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-15px)';
+            this.style.boxShadow = '0 20px 60px rgba(0,0,0,0.15)';
+            const img = this.querySelector('img');
+            if (img) img.style.transform = 'scale(1.08)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 10px 40px rgba(0,0,0,0.1)';
+            const img = this.querySelector('img');
+            if (img) img.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Navigation hover effects
+    const navButtons = document.querySelectorAll('.carousel-nav');
+    navButtons.forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            this.style.color = 'white';
+            this.style.transform = 'translateY(-50%) scale(1.1)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.background = 'white';
+            this.style.color = 'black';
+            this.style.transform = 'translateY(-50%) scale(1)';
+        });
+    });
+});
+
+// Auto-play
+setInterval(() => {
+    const track = document.querySelector('.simple-carousel-track');
+    if (track) {
+        const cards = track.children;
+        const maxIndex = Math.max(0, cards.length - Math.floor(cardsToShow));
+        
+        if (currentIndex >= maxIndex) {
+            currentIndex = 0;
+        } else {
+            currentIndex++;
+        }
+        
+        const cardWidth = 100 / cardsToShow;
+        const translateX = -(currentIndex * cardWidth);
+        track.style.transform = `translateX(${translateX}%)`;
+    }
+}, 6000);
+
+// Responsive handling
+function handleResize() {
+    const width = window.innerWidth;
+    const cards = document.querySelectorAll('.simple-card');
+    
+    cards.forEach(card => {
+        if (width <= 768) {
+            card.style.flex = '0 0 calc((100% - 24px) / 1.2)';
+            card.style.minWidth = '260px';
+        } else if (width <= 992) {
+            card.style.flex = '0 0 calc((100% - 48px) / 2.5)';
+        } else if (width <= 1200) {
+            card.style.flex = '0 0 calc((100% - 72px) / 3.5)';
+        } else {
+            card.style.flex = '0 0 calc((100% - 96px) / 4.5)';
+        }
+    });
+    
+    // Hide navigation on mobile
+    const navButtons = document.querySelectorAll('.carousel-nav');
+    navButtons.forEach(btn => {
+        btn.style.display = width <= 768 ? 'none' : 'flex';
+    });
+}
+
+// Call on load and resize
+window.addEventListener('load', handleResize);
+window.addEventListener('resize', handleResize);
+</script>

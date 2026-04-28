@@ -1,0 +1,546 @@
+@using Microsoft.AspNetCore.Identity
+@using WebDuLichDaLat.Models
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WebDuLichDaLat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="d-flex flex-column min-vh-100 ">
+
+    <!-- IMAGE BACKGROUND -->
+    <div style="
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        min-width: 100%;
+        min-height: 100%;
+        z-index: -1;
+        background-image: url('@Url.Content("~/Images/Background.png")');
+        background-size: cover;
+        background-position: center;">
+    </div>
+
+    <header class="navbar-custom @(ViewBag.HideNavbar == true ? "d-none" : "")" style="margin: 0; padding: 0;">
+        <nav class="navbar navbar-expand-lg navbar-dark" style="margin: 0; padding: 0;">
+            <div class="container-fluid px-4 px-lg-5">
+                <!-- Logo -->
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand d-flex align-items-center">
+                    <span class="logo-text" style="font-weight: 600; font-size: 28px; letter-spacing: 0.5px; color: white;">
+                        Đà Lạt
+                    </span>
+                </a>
+
+                <!-- Toggle button for mobile -->
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Menu -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto align-items-center">
+                        <!-- Main Navigation Links -->
+                        <li class="nav-item">
+                            <a class="nav-link text-white px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "TouristPlace" ? "active" : "")"
+                               href="javascript:void(0)" onclick="openPlacesPanel(); return false;">
+                                Địa điểm
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Festival" ? "active" : "")"
+                               asp-area="" asp-controller="Festival" asp-action="Index">
+                                Lễ hội & Sự kiện
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-white px-3 dropdown-toggle @(ViewContext.RouteData.Values["controller"]?.ToString() == "Hotel" || ViewContext.RouteData.Values["controller"]?.ToString() == "Restaurant" ? "active" : "")"
+                               href="#" id="accommodationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Lưu trú
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="accommodationDropdown">
+                                <li>
+                                    <a class="dropdown-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Hotel" ? "active" : "")"
+                                       asp-area="" asp-controller="Hotel" asp-action="Index">
+                                        <i class="bi bi-building me-2"></i> Khách sạn
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Restaurant" ? "active" : "")"
+                                       asp-area="" asp-controller="Restaurant" asp-action="Index">
+                                        <i class="bi bi-cup-hot me-2"></i> Nhà hàng & Quán ăn
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "TripPlanner" ? "active" : "")"
+                               asp-area="" asp-controller="TripPlanner" asp-action="Index">
+                                Gợi ý du lịch
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Carpool" ? "active" : "")"
+                               asp-area="" asp-controller="Carpool" asp-action="Index">
+                                <i class="bi bi-car-front me-1"></i> Ghép xe đi chung
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Right Side: Search, Icons, Language -->
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Search -->
+                        <form id="searchForm" method="get" asp-area="" asp-controller="TouristPlace" asp-action="Search" class="d-flex align-items-center">
+                            <i class="bi bi-search text-white me-2" style="cursor: pointer;" onclick="document.getElementById('searchForm').submit();"></i>
+                            <input type="text" class="form-control border-0 bg-transparent text-white" 
+                                   id="searchInput" name="query" placeholder="Search" 
+                                   style="width: 100px; color: white !important;"
+                                   onfocus="this.style.width='200px';" 
+                                   onblur="if(this.value=='') this.style.width='100px';">
+                        </form>
+
+                        <!-- Map Icon -->
+                        <a href="@Url.Action("Index", "TouristPlace")" class="text-white" title="Bản đồ">
+                            <i class="bi bi-geo-alt-fill" style="font-size: 20px;"></i>
+                        </a>
+
+                        <!-- Info Icon -->
+                        <a href="@Url.Action("Index", "Contact")" class="text-white" title="Thông tin">
+                            <i class="bi bi-info-circle-fill" style="font-size: 20px;"></i>
+                        </a>
+
+
+                        <!-- Admin Menu (if admin) -->
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="dropdown">
+                                <a class="nav-link text-warning dropdown-toggle d-flex align-items-center" href="#" 
+                                   id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle me-1"></i> Admin
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Admin" asp-controller="TouristPlace" asp-action="Manage">
+                                            <i class="bi bi-box-seam"></i> Quản lý địa điểm
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Admin" asp-controller="Category" asp-action="Index">
+                                            <i class="bi bi-box-seam"></i> Quản lý danh mục
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Admin" asp-controller="TouristPlace" asp-action="Add">
+                                            <i class="bi bi-plus-square"></i> Thêm địa điểm
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Admin" asp-controller="Contact" asp-action="Index">
+                                            <i class="bi bi-envelope-fill"></i> Quản lý liên hệ
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+
+                        <!-- Login/User -->
+                        @await Html.PartialAsync("_LoginPartial")
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <style>
+        .navbar-custom {
+            background: transparent !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            padding: 15px 0;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 9999 !important;
+            transition: transform 0.3s ease, background 0.3s ease;
+            width: 100%;
+            margin: 0 !important;
+            transform: translateY(0);
+        }
+
+        .navbar-custom.hidden {
+            transform: translateY(-100%);
+        }
+
+        .navbar-custom.scrolled {
+            background: rgba(0, 0, 0, 0.3) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .navbar-custom .nav-link {
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 8px 12px !important;
+            border-radius: 6px;
+            background-color: transparent;
+        }
+
+        .navbar-custom .nav-link:hover {
+            background-color: rgba(0, 0, 0, 0.6) !important;
+            color: #ffd700 !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .navbar-custom .nav-link.active {
+            color: #ffd700 !important;
+        }
+
+        .navbar-custom .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 2px;
+            background-color: #ffd700;
+        }
+
+        .navbar-custom .form-control {
+            color: white !important;
+        }
+
+        .navbar-custom .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .navbar-custom .form-control:focus {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border: none;
+            box-shadow: none;
+            color: white !important;
+        }
+
+        .navbar-custom .dropdown-menu {
+            background-color: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        .navbar-custom .dropdown-item {
+            color: white;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-custom .dropdown-item:hover,
+        .navbar-custom .dropdown-item.active {
+            background-color: rgba(255, 107, 157, 0.2);
+            color: #ff6b9d;
+        }
+
+        .navbar-custom .dropdown-toggle::after {
+            margin-left: 5px;
+        }
+
+        .logo-text {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        @@media (max-width: 991px) {
+            .navbar-custom {
+                background: rgba(0, 0, 0, 0.9) !important;
+            }
+
+            .navbar-custom .navbar-collapse {
+                background-color: rgba(0, 0, 0, 0.95);
+                padding: 20px;
+                border-radius: 10px;
+                margin-top: 10px;
+            }
+        }
+    </style>
+
+    <!-- Places Panel -->
+    @await Component.InvokeAsync("PlacesPanel")
+
+    <!-- Trip Planner Panel -->
+    @await Component.InvokeAsync("TripPlannerPanel")
+
+    <script>
+        // JS xử lý tìm kiếm
+        document.getElementById("searchForm")?.addEventListener("submit", function (event) {
+            const keyword = document.getElementById("searchInput")?.value.trim();
+            if (!keyword || keyword === "") {
+                event.preventDefault();
+            }
+        });
+
+        // Navbar scroll effect - Ẩn khi scroll xuống, hiện khi scroll lên
+        let lastScrollTop = 0;
+        let ticking = false;
+        let scrollDirection = 'up'; // Track hướng scroll
+        const navbar = document.querySelector('.navbar-custom');
+        const scrollThreshold = 50;
+        
+        function handleScroll() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollDifference = scrollTop - lastScrollTop;
+            
+            // Xác định hướng scroll với threshold nhỏ để tránh flicker
+            if (Math.abs(scrollDifference) > 3) {
+                scrollDirection = scrollDifference > 0 ? 'down' : 'up';
+            }
+            
+            // Đóng các panel khi scroll xuống
+            if (scrollDirection === 'down' && scrollTop > scrollThreshold) {
+                const placesPanel = document.getElementById('placesPanel');
+                const tripPlannerPanel = document.getElementById('tripPlannerPanel');
+                
+                if (placesPanel && placesPanel.classList.contains('open')) {
+                    closePlacesPanel();
+                }
+                if (tripPlannerPanel && tripPlannerPanel.classList.contains('open')) {
+                    closeTripPlannerPanel();
+                }
+            }
+            
+            // Ở đầu trang - luôn hiển thị navbar
+            if (scrollTop < scrollThreshold) {
+                navbar.classList.remove('hidden');
+                navbar.classList.remove('scrolled');
+                scrollDirection = 'up';
+                lastScrollTop = scrollTop;
+                ticking = false;
+                return;
+            }
+            
+            // Scroll xuống - ẩn navbar (luôn ẩn khi scroll xuống)
+            if (scrollDirection === 'down' && scrollTop > scrollThreshold) {
+                navbar.classList.add('hidden');
+            } 
+            // Scroll lên - hiện navbar
+            else if (scrollDirection === 'up') {
+                navbar.classList.remove('hidden');
+            }
+            
+            // Thêm background khi scroll xuống
+            if (scrollTop > scrollThreshold) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+            ticking = false;
+        }
+        
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(handleScroll);
+                ticking = true;
+            }
+        }, { passive: true });
+        
+        // Đảm bảo navbar ẩn khi scroll dừng lại ở vị trí scroll xuống
+        let scrollStopTimeout;
+        window.addEventListener('scroll', function() {
+            clearTimeout(scrollStopTimeout);
+            scrollStopTimeout = setTimeout(function() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                // Nếu đang scroll xuống và dừng lại, giữ navbar ẩn
+                if (scrollDirection === 'down' && scrollTop > scrollThreshold) {
+                    navbar.classList.add('hidden');
+                }
+            }, 100);
+        }, { passive: true });
+
+        // Track which panel is currently open
+        var currentOpenPanel = null;
+
+        // Global functions for places panel
+        function openPlacesPanel() {
+            var placesPanel = document.getElementById('placesPanel');
+            var tripPlannerPanel = document.getElementById('tripPlannerPanel');
+            
+            // Nếu PlacesPanel đang mở, đóng nó lại (toggle)
+            if (placesPanel && placesPanel.classList.contains('open')) {
+                closePlacesPanel();
+                return;
+            }
+            
+            // Nếu các panel khác đang mở, đóng chúng ngay lập tức
+            var hasOtherPanelOpen = false;
+            if (tripPlannerPanel && tripPlannerPanel.classList.contains('open')) {
+                tripPlannerPanel.classList.remove('open');
+                tripPlannerPanel.style.display = 'none';
+                hasOtherPanelOpen = true;
+            }
+            
+            if (hasOtherPanelOpen) {
+                // Hiển thị PlacesPanel ngay lập tức (không animation)
+                placesPanel.style.display = 'block';
+                placesPanel.style.zIndex = '1000';
+                placesPanel.classList.add('open');
+                currentOpenPanel = 'places';
+                
+                // Initialize mini map if Leaflet is loaded
+                if (typeof L !== 'undefined') {
+                    initPanelMiniMap();
+                }
+                
+                // Open first section by default
+                setTimeout(function() {
+                    var firstSection = placesPanel.querySelector('#resortSection');
+                    var firstButton = placesPanel.querySelector('.section-toggle-btn');
+                    if (firstSection && firstButton && !firstSection.classList.contains('open')) {
+                        toggleSection('resortSection', firstButton);
+                    }
+                }, 100);
+            } else {
+                // Nếu không có panel nào đang mở, mở với animation từ dưới lên
+                openPlacesPanelInternal();
+            }
+        }
+
+        function openPlacesPanelInternal() {
+            var panel = document.getElementById('placesPanel');
+            if (panel) {
+                panel.style.display = 'block';
+                panel.style.zIndex = '9000'; // Panel ở dưới navbar (navbar z-index: 9999)
+                currentOpenPanel = 'places';
+                // Don't disable body scroll - allow user to scroll page behind panel
+                setTimeout(function() {
+                    panel.classList.add('open');
+                    // Initialize mini map if Leaflet is loaded
+                    if (typeof L !== 'undefined') {
+                        initPanelMiniMap();
+                    }
+                    // Open first section by default
+                    setTimeout(function() {
+                        var firstSection = panel.querySelector('#resortSection');
+                        var firstButton = panel.querySelector('.section-toggle-btn');
+                        if (firstSection && firstButton && !firstSection.classList.contains('open')) {
+                            toggleSection('resortSection', firstButton);
+                        }
+                    }, 100);
+                }, 10);
+            }
+        }
+
+        function closePlacesPanel() {
+            var panel = document.getElementById('placesPanel');
+            if (panel) {
+                panel.classList.remove('open');
+                currentOpenPanel = null;
+                setTimeout(function() {
+                    panel.style.display = 'none';
+                }, 400);
+            }
+        }
+
+        function toggleSection(sectionId, button) {
+            var section = document.getElementById(sectionId);
+            if (!section) return;
+            
+            var isOpen = section.classList.contains('open');
+            
+            if (isOpen) {
+                section.style.maxHeight = section.scrollHeight + 'px';
+                section.offsetHeight;
+                section.style.maxHeight = '0';
+                section.classList.remove('open');
+                button.classList.remove('active');
+            } else {
+                section.style.maxHeight = '0';
+                section.classList.add('open');
+                section.offsetHeight;
+                section.style.maxHeight = section.scrollHeight + 'px';
+                button.classList.add('active');
+            }
+        }
+
+
+
+        function initPanelMiniMap() {
+            if (typeof L === 'undefined') return;
+            
+            var mapElement = document.getElementById('panelMiniMap');
+            if (!mapElement || mapElement.hasChildNodes()) return;
+
+            var miniMap = L.map('panelMiniMap', {
+                center: [11.9404, 108.4583],
+                zoom: 11,
+                zoomControl: false,
+                attributionControl: false
+            });
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
+            }).addTo(miniMap);
+
+            // Add sample markers (you can load from server if needed)
+            L.marker([11.9404, 108.4583]).addTo(miniMap).bindPopup('<b>Đà Lạt</b>');
+        }
+
+
+        // Close panel when clicking outside
+        document.addEventListener('DOMContentLoaded', function() {
+            var placesPanel = document.getElementById('placesPanel');
+            if (placesPanel) {
+                placesPanel.addEventListener('click', function(e) {
+                    if (e.target === placesPanel) {
+                        closePlacesPanel();
+                    }
+                });
+            }
+
+            var tripPlannerPanel = document.getElementById('tripPlannerPanel');
+            if (tripPlannerPanel) {
+                tripPlannerPanel.addEventListener('click', function(e) {
+                    if (e.target === tripPlannerPanel) {
+                        closeTripPlannerPanel();
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- BODY CHUNG KHUNG -->
+    <main class="flex-fill d-flex flex-column" style="margin-top: 0; padding-top: 0;">
+        <div class="container-fluid flex-grow-1" style="padding: 0;">
+            @RenderBody()
+            @RenderSection("Styles", required: false)
+        </div>
+    </main>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script>new WOW().init();</script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>
+

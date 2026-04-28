@@ -1,0 +1,111 @@
+﻿@page
+@model EnableAuthenticatorModel
+@{
+    ViewData["Title"] = "Configure authenticator app";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<style>
+    body, div, h1, h2, h3, h4, h5, h6, p, label, li, kbd, span {
+        color: white;
+    }
+
+    .auth-container {
+        background-color: #2c2c2c;
+        border-radius: 8px;
+        padding: 30px;
+        margin-top: 20px;
+    }
+
+    .text-blue-link a {
+        color: #007bff !important;
+    }
+
+    a {
+        text-decoration: underline;
+    }
+</style>
+
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="container auth-container">
+    <h3 class="mb-4">@ViewData["Title"]</h3>
+
+    <p>To use an authenticator app go through the following steps:</p>
+
+    <ol class="list">
+        <li class="mb-3">
+            <p>
+                Download a two-factor authenticator app like Microsoft Authenticator for
+                <a href="https://go.microsoft.com/fwlink/?Linkid=825072" target="_blank">Android</a> and
+                <a href="https://go.microsoft.com/fwlink/?Linkid=825073" target="_blank">iOS</a>,
+                or Google Authenticator for
+                <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en" target="_blank">Android</a> and
+                <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8" target="_blank">iOS</a>.
+            </p>
+        </li>
+
+        <li class="mb-3">
+            <p>
+                Scan the QR Code or enter this key <kbd>@Model.SharedKey</kbd> into your two-factor authenticator app.
+                Spaces and casing do not matter.
+            </p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="alert alert-info text-dark text-blue-link">
+                        Learn how to <a href="https://go.microsoft.com/fwlink/?Linkid=852423" target="_blank">enable QR code generation</a>.
+                    </div>
+                </div>
+            </div>
+            <div id="qrCode" class="mb-2"></div>
+            <div id="qrCodeData" data-url="@Model.AuthenticatorUri"></div>
+        </li>
+
+        <li class="mb-3">
+            <p>
+                Once you have scanned the QR code or input the key above, your authenticator app will provide you
+                with a unique code. Enter the code below to confirm.
+            </p>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <form id="send-code" method="post">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Code" class="form-control" autocomplete="off" placeholder="Please enter the code." />
+                            <label asp-for="Input.Code" class="form-label">Verification Code</label>
+                            <span asp-validation-for="Input.Code" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="w-100 btn btn-lg btn-primary">Verify</button>
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mt-2" role="alert"></div>
+                    </form>
+                </div>
+            </div>
+        </li>
+    </ol>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const qrCodeData = document.getElementById("qrCodeData");
+            const qrCodeUrl = qrCodeData.getAttribute("data-url");
+            const qrCodeContainer = document.getElementById("qrCode");
+
+            if (qrCodeUrl && qrCodeContainer) {
+                new QRCode(qrCodeContainer, {
+                    text: qrCodeUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#ffffff",    
+                    colorLight: "#2c2c2c",    
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+        });
+    </script>
+}
+

@@ -1,0 +1,32 @@
+﻿@model IEnumerable<WebDuLichDaLat.Models.Category>
+
+<h2>Danh Sách Danh Mục</h2>
+
+<p>
+    <a asp-area="Admin" asp-controller="Category" asp-action="Add" class="btn btn-primary">Thêm Danh Mục Mới</a>
+</p>
+
+    <table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th class="text-white">#</th>
+            <th class="text-white">Tên Danh Mục</th>
+            <th class="text-white">Hành Động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td class="text-white">@item.Id</td>
+                <td class="text-white">@item.Name</td>
+                <td>
+                    <a asp-area="Admin" asp-controller="Category" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm text-white">Sửa</a>
+                    <form asp-area="Admin" asp-controller="Category" asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline-block" onsubmit="return confirm('Bạn có chắc muốn xóa?');">
+                        <button type="submit" class="btn btn-danger btn-sm text-white">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,625 @@
+@model IEnumerable<WebDuLichDaLat.Models.Festival>
+@{
+    Layout = "~/Views/Shared/_LayoutNoFooter.cshtml";
+    ViewData["Title"] = "Lễ hội & Sự kiện";
+}
+
+<!-- Import Modern Font -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Hero Section with Event Spotlight -->
+<section class="hero-section" style="background: linear-gradient(135deg, rgba(138,43,226,0.15), rgba(255,107,157,0.1)), linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover; height: 100vh; display: flex; align-items: center; position: relative; margin-top: 0; padding-top: 80px;">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h1 class="hero-title mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 3.5rem; font-weight: 800; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); line-height: 1.2;">
+                    Lễ Hội & Sự Kiện Đà Lạt
+                </h1>
+                <p class="hero-subtitle mb-5" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.3rem; color: rgba(255,255,255,0.9); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-weight: 300;">
+                    Trải nghiệm những lễ hội văn hóa và sự kiện đặc sắc nhất
+                </p>
+                <div class="hero-search-box" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; padding: 25px; max-width: 600px; margin: 0 auto; box-shadow: 0 25px 50px rgba(0,0,0,0.3);">
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="flex-grow-1">
+                            <input type="text" class="form-control modern-search" placeholder="Tìm kiếm lễ hội, sự kiện..." 
+                                   style="border: none; background: rgba(255,255,255,0.9); color: #333; font-size: 16px; padding: 18px 25px; border-radius: 20px; box-shadow: none; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;">
+                        </div>
+                        <button class="btn hero-search-btn" type="button" style="background: linear-gradient(135deg, #8a2be2, #ff6b9d); color: white; border: none; border-radius: 20px; padding: 18px 35px; font-weight: 600; box-shadow: 0 8px 25px rgba(138,43,226,0.4); font-family: 'Plus Jakarta Sans', sans-serif;">
+                            <i class="bi bi-search me-2"></i>Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Event Spotlight Effects -->
+    <div class="spotlight-bg">
+        <div class="spotlight-orb spotlight-orb-1"></div>
+        <div class="spotlight-orb spotlight-orb-2"></div>
+        <div class="spotlight-orb spotlight-orb-3"></div>
+    </div>
+</section>
+
+<!-- Main Content Section -->
+<section id="festival-section" style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%); color: white; min-height: 100vh; padding: 60px 0 40px 0; font-family: 'Plus Jakarta Sans', sans-serif; position: relative; overflow: hidden;">
+    <!-- Background Stage Lights -->
+    <div class="stage-lights-bg">
+        <div class="stage-light stage-light-1"></div>
+        <div class="stage-light stage-light-2"></div>
+        <div class="stage-light stage-light-3"></div>
+        <div class="stage-light stage-light-4"></div>
+    </div>
+    
+    <div class="container-fluid px-4">
+        <!-- Modern Header -->
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="mb-3" style="font-size: 2.8rem; font-weight: 800; color: white; letter-spacing: -1px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                    Lễ Hội & Sự Kiện
+                </h2>
+                <p class="text-muted mb-0" style="color: rgba(255,255,255,0.7); font-size: 18px; font-weight: 400; font-family: 'Plus Jakarta Sans', sans-serif;">
+                    <i class="bi bi-calendar-event me-2" style="color: #8a2be2;"></i>Khám phá những trải nghiệm văn hóa đặc sắc
+                </p>
+            </div>
+        </div>
+
+        <!-- Modern Event Cards Grid -->
+        <div class="row g-4">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var festival in Model)
+                {
+                    <div class="col-md-6 col-xl-4">
+                        <div class="event-card modern-event-card" 
+                             style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; overflow: hidden; cursor: pointer; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); height: 100%; display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.3);"
+                             onclick="window.location.href='@Url.Action("Detail", "Festival", new { id = festival.Id })'">
+                            
+                            <!-- Modern Image Section with Date Box -->
+                            <div class="position-relative event-image-container" style="height: 280px; overflow: hidden; flex-shrink: 0;">
+                                @if (!string.IsNullOrEmpty(festival.ImageUrl))
+                                {
+                                    var imageUrl = festival.ImageUrl.StartsWith("~") ? Url.Content(festival.ImageUrl) : festival.ImageUrl;
+                                    <img src="@imageUrl" alt="@festival.Title" 
+                                         style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #8a2be2 0%, #ff6b9d 50%, #ffd700 100%); display: none; align-items: center; justify-content: center; position: absolute; top: 0; left: 0;">
+                                        <div class="event-icon-container" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; border: 1px solid rgba(255,255,255,0.2);">
+                                            <i class="bi bi-calendar-event" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #8a2be2 0%, #ff6b9d 50%, #ffd700 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <div class="event-icon-container" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; border: 1px solid rgba(255,255,255,0.2);">
+                                            <i class="bi bi-calendar-event" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
+                                        </div>
+                                        <!-- Floating sparkles effect -->
+                                        <div class="floating-sparkles">
+                                            <div class="sparkle" style="position: absolute; width: 4px; height: 4px; background: rgba(255,255,255,0.8); border-radius: 50%; top: 20%; left: 15%; animation: sparkle 2s ease-in-out infinite;"></div>
+                                            <div class="sparkle" style="position: absolute; width: 6px; height: 6px; background: rgba(255,215,0,0.6); border-radius: 50%; top: 60%; right: 20%; animation: sparkle 3s ease-in-out infinite 1s;"></div>
+                                            <div class="sparkle" style="position: absolute; width: 3px; height: 3px; background: rgba(255,255,255,0.9); border-radius: 50%; bottom: 30%; left: 70%; animation: sparkle 2.5s ease-in-out infinite 2s;"></div>
+                                        </div>
+                                    </div>
+                                }
+                                
+                                <!-- Modern Date Box (Calendar Style) -->
+                                <div class="position-absolute top-0 start-0 m-4">
+                                    <div class="date-box" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(15px); border-radius: 15px; padding: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); min-width: 70px;">
+                                        <div style="color: #8a2be2; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 2px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                            @festival.StartDate.ToString("MMM", new System.Globalization.CultureInfo("vi-VN"))
+                                        </div>
+                                        <div style="color: #333; font-size: 24px; font-weight: 800; line-height: 1; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                            @festival.StartDate.Day
+                                        </div>
+                                        @if (festival.EndDate.HasValue && festival.EndDate.Value != festival.StartDate)
+                                        {
+                                            <div style="color: #666; font-size: 10px; margin-top: 2px; font-weight: 500;">
+                                                - @festival.EndDate.Value.Day
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <!-- Event Type Badge -->
+                                @if (!string.IsNullOrEmpty(festival.EventType))
+                                {
+                                    <div class="position-absolute top-0 end-0 m-4">
+                                        <div class="event-type-badge" style="background: linear-gradient(135deg, #8a2be2, #ff6b9d); color: white; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; box-shadow: 0 5px 15px rgba(138,43,226,0.3); font-family: 'Plus Jakarta Sans', sans-serif;">
+                                            @festival.EventType
+                                        </div>
+                                    </div>
+                                }
+                                
+                                <!-- Floating Action Button -->
+                                <div class="position-absolute bottom-0 end-0 m-4">
+                                    <button class="btn floating-action-btn" style="background: linear-gradient(135deg, #8a2be2, #ff6b9d); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(138,43,226,0.4);">
+                                        <i class="bi bi-arrow-right" style="color: white; font-size: 18px; font-weight: 600;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Modern Content -->
+                            <div class="p-4" style="flex-grow: 1; display: flex; flex-direction: column; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                <!-- Event Title -->
+                                <h4 class="mb-3" style="font-size: 22px; font-weight: 700; color: white; line-height: 1.3; flex-grow: 0; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                    @festival.Title
+                                </h4>
+                                
+                                <!-- Description Preview -->
+                                <p class="mb-3" style="color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.6; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                    @((festival.Description?.Length > 120) ? festival.Description.Substring(0, 120) + "..." : festival.Description ?? "")
+                                </p>
+                                
+                                <!-- Meta Information with Icon Boxes -->
+                                <div class="meta-info mb-3" style="display: flex; flex-wrap: wrap; gap: 12px;">
+                                    @if (!string.IsNullOrEmpty(festival.Location))
+                                    {
+                                        <div class="meta-item" style="background: rgba(138,43,226,0.15); border: 1px solid rgba(138,43,226,0.3); border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; font-size: 12px; font-weight: 500;">
+                                            <i class="bi bi-geo-alt-fill me-2" style="color: #8a2be2; font-size: 14px;"></i>
+                                            <span style="color: rgba(255,255,255,0.8);">@festival.Location</span>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(festival.TicketPrice))
+                                    {
+                                        <div class="meta-item" style="background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.3); border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; font-size: 12px; font-weight: 500;">
+                                            <i class="bi bi-ticket-perforated-fill me-2" style="color: #ffd700; font-size: 14px;"></i>
+                                            <span style="color: rgba(255,255,255,0.8);">@festival.TicketPrice</span>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(festival.Time))
+                                    {
+                                        <div class="meta-item" style="background: rgba(255,107,157,0.15); border: 1px solid rgba(255,107,157,0.3); border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; font-size: 12px; font-weight: 500;">
+                                            <i class="bi bi-clock-fill me-2" style="color: #ff6b9d; font-size: 14px;"></i>
+                                            <span style="color: rgba(255,255,255,0.8);">@festival.Time</span>
+                                        </div>
+                                    }
+                                </div>
+                                
+                                <!-- Modern Footer -->
+                                <div class="d-flex align-items-center justify-content-between mt-auto pt-3" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                                    <div class="view-details" style="color: #8a2be2; font-weight: 600; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center;">
+                                        Xem chi tiết <i class="bi bi-arrow-right ms-2"></i>
+                                    </div>
+                                    <div class="event-status" style="color: #ffd700; font-size: 12px; display: flex; align-items: center; font-weight: 600;">
+                                        @if (festival.StartDate > DateTime.Now)
+                                        {
+                                            <i class="bi bi-clock me-1"></i><span>Sắp diễn ra</span>
+                                        }
+                                        else if (festival.EndDate.HasValue && festival.EndDate.Value >= DateTime.Now)
+                                        {
+                                            <i class="bi bi-play-circle me-1"></i><span>Đang diễn ra</span>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-check-circle me-1"></i><span>Đã kết thúc</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <!-- Modern Empty State -->
+                <div class="col-12 text-center py-5">
+                    <div class="empty-state glassmorphism-panel" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border-radius: 25px; padding: 80px 50px; border: 1px solid rgba(255,255,255,0.1); max-width: 500px; margin: 0 auto;">
+                        <div class="empty-icon mb-4" style="background: linear-gradient(135deg, #8a2be2, #ff6b9d); width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                            <i class="bi bi-calendar-x" style="font-size: 40px; color: white;"></i>
+                        </div>
+                        <h3 class="mt-3 mb-3" style="color: white; font-size: 28px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;">Chưa có sự kiện nào</h3>
+                        <p class="text-muted mb-4" style="color: rgba(255,255,255,0.6); font-size: 16px; line-height: 1.6; font-family: 'Plus Jakarta Sans', sans-serif;">
+                            Các lễ hội và sự kiện đặc sắc sẽ được cập nhật sớm nhất
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Modern CSS Variables */
+    :root {
+        --primary-purple: #8a2be2;
+        --primary-pink: #ff6b9d;
+        --accent-gold: #ffd700;
+        --glass-bg: rgba(255,255,255,0.05);
+        --glass-border: rgba(255,255,255,0.1);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255,255,255,0.8);
+        --text-muted: rgba(255,255,255,0.6);
+        --shadow-light: 0 10px 30px rgba(0,0,0,0.3);
+        --shadow-heavy: 0 25px 50px rgba(0,0,0,0.4);
+        --blur-light: blur(15px);
+        --blur-heavy: blur(25px);
+        --radius-sm: 15px;
+        --radius-md: 20px;
+        --radius-lg: 25px;
+        --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* Event Spotlight Background Effects */
+    .spotlight-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .spotlight-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(40px);
+        opacity: 0.6;
+        animation: spotlight 10s ease-in-out infinite;
+    }
+
+    .spotlight-orb-1 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(138,43,226,0.4) 0%, transparent 70%);
+        top: 15%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .spotlight-orb-2 {
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(255,107,157,0.3) 0%, transparent 70%);
+        top: 50%;
+        right: 15%;
+        animation-delay: 3s;
+    }
+
+    .spotlight-orb-3 {
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+        bottom: 20%;
+        left: 60%;
+        animation-delay: 6s;
+    }
+
+    /* Stage Lights Background */
+    .stage-lights-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .stage-light {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.2;
+        animation: stageLight 15s ease-in-out infinite;
+    }
+
+    .stage-light-1 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(138,43,226,0.3) 0%, transparent 70%);
+        top: 10%;
+        right: 5%;
+        animation-delay: 0s;
+    }
+
+    .stage-light-2 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,107,157,0.2) 0%, transparent 70%);
+        bottom: 20%;
+        left: 10%;
+        animation-delay: 5s;
+    }
+
+    .stage-light-3 {
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%);
+        top: 60%;
+        left: 50%;
+        animation-delay: 10s;
+    }
+
+    .stage-light-4 {
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(138,43,226,0.25) 0%, transparent 70%);
+        bottom: 40%;
+        right: 30%;
+        animation-delay: 12s;
+    }
+
+    /* Hero Section Animations */
+    .hero-title {
+        animation: fadeInUp 1s ease-out;
+    }
+    
+    .hero-subtitle {
+        animation: fadeInUp 1s ease-out 0.2s both;
+    }
+    
+    .hero-search-box {
+        animation: fadeInUp 1s ease-out 0.4s both;
+    }
+    
+    .hero-search-btn:hover {
+        background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple)) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(138,43,226,0.5) !important;
+    }
+
+    .modern-search:focus {
+        box-shadow: 0 0 0 4px rgba(138,43,226,0.2) !important;
+        transform: scale(1.02);
+    }
+
+    /* Glassmorphism Panel Effects */
+    .glassmorphism-panel {
+        backdrop-filter: var(--blur-heavy);
+        -webkit-backdrop-filter: var(--blur-heavy);
+        transition: var(--transition-smooth);
+        position: relative;
+    }
+
+    .glassmorphism-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(138,43,226,0.05), rgba(255,107,157,0.03));
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+        pointer-events: none;
+    }
+
+    .glassmorphism-panel:hover::before {
+        opacity: 1;
+    }
+
+    /* Modern Event Card Styles */
+    .modern-event-card {
+        transition: var(--transition-smooth);
+        backdrop-filter: var(--blur-heavy);
+        -webkit-backdrop-filter: var(--blur-heavy);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modern-event-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, transparent, rgba(138,43,226,0.05));
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+        pointer-events: none;
+        border-radius: inherit;
+    }
+
+    .modern-event-card:hover {
+        transform: translateY(-15px) scale(1.02);
+        box-shadow: 
+            0 30px 60px rgba(0,0,0,0.5),
+            0 0 40px rgba(138,43,226,0.3),
+            0 0 0 1px rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.08) !important;
+    }
+
+    .modern-event-card:hover::before {
+        opacity: 1;
+    }
+
+    .modern-event-card:hover .event-image-container img {
+        transform: scale(1.1);
+    }
+
+    .modern-event-card:hover .view-details {
+        transform: translateX(8px);
+        color: #9d4edd !important;
+    }
+
+    .modern-event-card:hover .floating-action-btn {
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 12px 30px rgba(138,43,226,0.6) !important;
+    }
+
+    .modern-event-card:hover .date-box {
+        transform: scale(1.05);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4) !important;
+    }
+
+    .modern-event-card:hover .event-type-badge {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(138,43,226,0.5) !important;
+    }
+
+    /* Date Box Styles */
+    .date-box {
+        transition: var(--transition-smooth);
+    }
+
+    /* Meta Items Hover */
+    .meta-item {
+        transition: var(--transition-smooth);
+    }
+
+    .modern-event-card:hover .meta-item {
+        transform: translateY(-2px);
+    }
+
+    /* Floating Sparkles Animation */
+    .sparkle {
+        animation: sparkle 2s ease-in-out infinite;
+    }
+
+    /* Enhanced Empty State */
+    .empty-state:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 35px 70px rgba(0,0,0,0.6),
+            0 0 40px rgba(138,43,226,0.2) !important;
+    }
+
+    /* Floating Action Button */
+    .floating-action-btn {
+        transition: var(--transition-smooth);
+    }
+
+    .floating-action-btn:hover {
+        transform: scale(1.1) rotate(90deg) !important;
+        box-shadow: 0 12px 30px rgba(138,43,226,0.6) !important;
+    }
+
+    /* Event Status Colors */
+    .event-status {
+        transition: var(--transition-smooth);
+    }
+</style>
+
+@{
+    string festivalKeyframes = @"
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spotlight {
+            0%, 100% { 
+                transform: translateY(0px) scale(1);
+                opacity: 0.4;
+            }
+            50% { 
+                transform: translateY(-20px) scale(1.1);
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes stageLight {
+            0%, 100% { 
+                transform: translateX(0px) translateY(0px);
+                opacity: 0.2;
+            }
+            25% { 
+                transform: translateX(20px) translateY(-10px);
+                opacity: 0.4;
+            }
+            50% { 
+                transform: translateX(-10px) translateY(15px);
+                opacity: 0.3;
+            }
+            75% { 
+                transform: translateX(15px) translateY(-5px);
+                opacity: 0.35;
+            }
+        }
+
+        @keyframes sparkle {
+            0%, 100% { 
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% { 
+                transform: scale(1) rotate(180deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    ";
+    
+    string festivalResponsiveCSS = @"
+        @media (max-width: 992px) {
+            #festival-section {
+                padding: 20px 0;
+            }
+
+            .hero-section {
+                height: 50vh !important;
+                margin-top: 60px !important;
+            }
+
+            .hero-title {
+                font-size: 2.5rem !important;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem !important;
+            }
+
+            .hero-search-box {
+                padding: 20px !important;
+            }
+
+            .modern-event-card {
+                margin-bottom: 20px;
+            }
+
+            .spotlight-orb, .stage-light {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                height: 40vh !important;
+            }
+
+            .hero-title {
+                font-size: 2rem !important;
+            }
+
+            .hero-search-box .d-flex {
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+
+            .hero-search-btn {
+                width: 100% !important;
+            }
+
+            .meta-info {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+
+            .date-box {
+                min-width: 60px !important;
+                padding: 12px !important;
+            }
+        }
+    ";
+}
+
+<style>
+    @Html.Raw(festivalKeyframes)
+    @Html.Raw(festivalResponsiveCSS)
+</style>
+

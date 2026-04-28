@@ -1,0 +1,87 @@
+﻿@model WebDuLichDaLat.Models.TouristPlace
+
+<h2>Edit TouristPlace</h2>
+
+<form asp-area="Admin" asp-controller="touristPlace" asp-action="Update" enctype="multipart/form-data" style="padding-bottom: 60px;" class="text-white">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group mb-3">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="RegionId"></label>
+        <select asp-for="RegionId" asp-items="ViewBag.Regions" class="form-control">
+        </select>
+        <span asp-validation-for="RegionId" class="text-danger"></span>
+    </div>
+
+    <!-- Latitude -->
+    <div class="form-group mb-3">
+        <label asp-for="Latitude">Vĩ độ (Latitude)</label>
+        <input asp-for="Latitude" class="form-control" step="any" />
+        <span asp-validation-for="Latitude" class="text-danger"></span>
+    </div>
+
+    <!-- Longitude -->
+    <div class="form-group mb-3">
+        <label asp-for="Longitude">Kinh độ (Longitude)</label>
+        <input asp-for="Longitude" class="form-control" step="any" />
+        <span asp-validation-for="Longitude" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="CategoryId"></label>
+        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-control">
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <div class="mb-3">
+            <label>Current Main Image:</label><br />
+            <img src="@Model.ImageUrl" style="width: 200px; height: auto;" />
+        </div>
+    }
+
+    <div class="form-group mb-3">
+        <label for="ImageFile">Upload New Main Image</label>
+        <input type="file" name="ImageFile" class="form-control" />
+    </div>
+
+    @if (Model.ImageUrls != null && Model.ImageUrls.Any())
+    {
+        <div class="mb-3">
+            <label>Additional Images:</label><br />
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var imageUrl in Model.ImageUrls)
+                {
+                    <img src="@imageUrl" style="width: 150px; height: auto;" />
+                }
+            </div>
+        </div>
+    }
+
+    <div class="form-group mb-3">
+        <label for="AdditionalImages">Upload Additional Images</label>
+        <input type="file" name="AdditionalImages" class="form-control" multiple />
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="ReviewContent"></label>
+        <textarea asp-for="ReviewContent" class="form-control" id="reviewEditor" rows="10"></textarea>
+        <span asp-validation-for="ReviewContent" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Update</button>
+</form>
+

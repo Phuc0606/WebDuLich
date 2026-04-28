@@ -1,0 +1,876 @@
+﻿@using WebDuLichDaLat.Models
+@model IEnumerable<WebDuLichDaLat.Models.TouristPlace>
+
+@{
+    Layout = "~/Views/Shared/_LayoutNoFooter.cshtml";
+    ViewData["Title"] = "Địa điểm du lịch";
+    var categories = ViewBag.Categories as IEnumerable<WebDuLichDaLat.Models.Category>;
+    var regions = ViewBag.Regions as IEnumerable<WebDuLichDaLat.Models.Region>;
+    var touristPlacesList = Model?.ToList() ?? new List<WebDuLichDaLat.Models.TouristPlace>();
+    var selectedCategoryId = ViewContext.HttpContext.Request.Query["categoryId"].ToString();
+    var selectedRegionId = ViewContext.HttpContext.Request.Query["regionId"].ToString();
+}
+
+<!-- Import Modern Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Hero Section with Modern Search -->
+<section class="hero-section" style="background: linear-gradient(135deg, rgba(15,15,15,0.95), rgba(26,26,26,0.9)), linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover; height: 100vh; display: flex; align-items: center; position: relative; margin-top: 0; padding-top: 80px;">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h1 class="hero-title mb-4" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 3.5rem; font-weight: 800; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.7); line-height: 1.1; letter-spacing: -1px;">
+                    Khám Phá Địa Điểm Đà Lạt
+                </h1>
+                <p class="hero-subtitle mb-5" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.3rem; color: rgba(255,255,255,0.9); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); font-weight: 400;">
+                    Tìm kiếm những điểm đến tuyệt vời nhất tại thành phố ngàn hoa
+                </p>
+                <div class="hero-search-box" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; padding: 25px; max-width: 600px; margin: 0 auto; box-shadow: 0 25px 50px rgba(0,0,0,0.3);">
+                    <form method="get" action="@Url.Action("Search", "TouristPlace")">
+                        <div class="d-flex gap-3 align-items-center">
+                            <div class="flex-grow-1">
+                                <input type="text" name="query" class="form-control modern-search" placeholder="Tìm kiếm địa điểm..." 
+                                       style="border: none; background: rgba(255,255,255,0.9); color: #333; font-size: 16px; padding: 18px 25px; border-radius: 20px; box-shadow: none; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;">
+                            </div>
+                            <button class="btn hero-search-btn" type="submit" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 20px; padding: 18px 35px; font-weight: 600; box-shadow: 0 8px 25px rgba(102,126,234,0.4); font-family: 'Plus Jakarta Sans', sans-serif;">
+                                <i class="bi bi-search me-2"></i>Tìm kiếm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Background Glow Effects -->
+    <div class="places-glow-bg">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+        <div class="glow-orb glow-orb-3"></div>
+    </div>
+</section>
+
+<!-- Main Content Section -->
+<section id="places-section" style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%); color: white; min-height: 100vh; padding: 60px 0 40px 0; font-family: 'Plus Jakarta Sans', sans-serif; position: relative; overflow: hidden;">
+    <!-- Background Depth Effects -->
+    <div class="depth-texture-bg">
+        <div class="depth-grain depth-grain-1"></div>
+        <div class="depth-grain depth-grain-2"></div>
+        <div class="depth-grain depth-grain-3"></div>
+    </div>
+    
+    <div class="container-fluid px-4">
+        <div class="row">
+            <!-- Modern Glassmorphism Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="filter-sidebar glassmorphism-sidebar" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 30px; position: sticky; top: 100px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+                    <h3 class="mb-4" style="font-size: 24px; font-weight: 700; color: white; font-family: 'Plus Jakarta Sans', sans-serif;">
+                        <i class="bi bi-funnel me-2" style="color: #667eea;"></i>Bộ lọc
+                    </h3>
+                    
+                    <!-- Category Filter Pills -->
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px;">Danh mục</h5>
+                        <div class="filter-pills-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <a href="@Url.Action("Index", "TouristPlace")" 
+                               class="filter-pill @(string.IsNullOrEmpty(selectedCategoryId) ? "active" : "")"
+                               style="display: inline-flex; align-items: center; padding: 10px 18px; border-radius: 25px; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.3s ease; background: @(string.IsNullOrEmpty(selectedCategoryId) ? "linear-gradient(135deg, #667eea, #764ba2)" : "rgba(255,255,255,0.1)"); color: @(string.IsNullOrEmpty(selectedCategoryId) ? "white" : "rgba(255,255,255,0.7)"); border: 1px solid @(string.IsNullOrEmpty(selectedCategoryId) ? "transparent" : "rgba(255,255,255,0.2)");">
+                                <i class="bi bi-grid me-2"></i>Tất cả
+                            </a>
+                            @if (categories != null)
+                            {
+                                @foreach (var category in categories)
+                                {
+                                    <a href="@Url.Action("Index", "TouristPlace", new { categoryId = category.Id })" 
+                                       class="filter-pill @(selectedCategoryId == category.Id.ToString() ? "active" : "")"
+                                       style="display: inline-flex; align-items: center; padding: 10px 18px; border-radius: 25px; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.3s ease; background: @(selectedCategoryId == category.Id.ToString() ? "linear-gradient(135deg, #667eea, #764ba2)" : "rgba(255,255,255,0.1)"); color: @(selectedCategoryId == category.Id.ToString() ? "white" : "rgba(255,255,255,0.7)"); border: 1px solid @(selectedCategoryId == category.Id.ToString() ? "transparent" : "rgba(255,255,255,0.2)");">
+                                        <i class="bi bi-tag me-2"></i>@category.Name
+                                    </a>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Region Filter Checklist -->
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px;">Khu vực</h5>
+                        <div class="filter-checklist">
+                            <div class="checklist-item mb-2" style="display: flex; align-items: center; padding: 12px 16px; border-radius: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                                <div class="check-icon me-3" style="width: 20px; height: 20px; border-radius: 50%; background: @(string.IsNullOrEmpty(selectedRegionId) ? "linear-gradient(135deg, #667eea, #764ba2)" : "rgba(255,255,255,0.2)"); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                    @if (string.IsNullOrEmpty(selectedRegionId))
+                                    {
+                                        <i class="bi bi-check" style="color: white; font-size: 12px; font-weight: 700;"></i>
+                                    }
+                                </div>
+                                <a href="@Url.Action("Index", "TouristPlace", new { categoryId = selectedCategoryId })" 
+                                   style="color: @(string.IsNullOrEmpty(selectedRegionId) ? "white" : "rgba(255,255,255,0.7)"); text-decoration: none; font-weight: @(string.IsNullOrEmpty(selectedRegionId) ? "600" : "500"); flex-grow: 1; font-size: 14px;">
+                                    <i class="bi bi-geo-alt me-2" style="color: #667eea;"></i>Tất cả khu vực
+                                </a>
+                            </div>
+                            @if (regions != null)
+                            {
+                                @foreach (var region in regions)
+                                {
+                                    <div class="checklist-item mb-2" style="display: flex; align-items: center; padding: 12px 16px; border-radius: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                                        <div class="check-icon me-3" style="width: 20px; height: 20px; border-radius: 50%; background: @(selectedRegionId == region.Id.ToString() ? "linear-gradient(135deg, #667eea, #764ba2)" : "rgba(255,255,255,0.2)"); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                            @if (selectedRegionId == region.Id.ToString())
+                                            {
+                                                <i class="bi bi-check" style="color: white; font-size: 12px; font-weight: 700;"></i>
+                                            }
+                                        </div>
+                                        <a href="@Url.Action("Index", "TouristPlace", new { categoryId = selectedCategoryId, regionId = region.Id })" 
+                                           style="color: @(selectedRegionId == region.Id.ToString() ? "white" : "rgba(255,255,255,0.7)"); text-decoration: none; font-weight: @(selectedRegionId == region.Id.ToString() ? "600" : "500"); flex-grow: 1; font-size: 14px;">
+                                            <i class="bi bi-pin-map me-2" style="color: #764ba2;"></i>@region.Name
+                                        </a>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Map Link -->
+                    <div class="mt-4">
+                        <a href="@Url.Action("Map", "TouristPlace")" class="btn modern-map-btn w-100" 
+                           style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 20px; padding: 15px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(102,126,234,0.4);">
+                            <i class="bi bi-map me-2"></i>Xem trên bản đồ
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content - Modern Places Grid -->
+            <div class="col-lg-9">
+                <!-- Modern Header -->
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <div>
+                        <h2 class="mb-2" style="font-size: 2.8rem; font-weight: 800; color: white; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -1px;">
+                            Danh sách địa điểm
+                        </h2>
+                        <p class="text-muted mb-0" style="color: rgba(255,255,255,0.7); font-size: 18px; font-weight: 500;">
+                            <i class="bi bi-geo-alt me-2" style="color: #667eea;"></i>Tìm thấy <span style="color: #764ba2; font-weight: 700;">@touristPlacesList.Count</span> địa điểm tuyệt vời
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Modern Places Grid -->
+                @if (touristPlacesList.Any())
+                {
+                    <div class="row g-4">
+                        @foreach (var place in touristPlacesList)
+                        {
+                            <div class="col-md-6 col-xl-4">
+                                <article class="modern-place-card" 
+                                         style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; overflow: hidden; cursor: pointer; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); height: 100%; display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.3);"
+                                         onclick="window.location.href='@Url.Action("Display", "TouristPlace", new { id = place.Id })'">
+                                    
+                                    <!-- Modern Image Container -->
+                                    <div class="position-relative place-image-container" style="height: 280px; overflow: hidden; flex-shrink: 0;">
+                                        @if (!string.IsNullOrEmpty(place.ImageUrl))
+                                        {
+                                            var imageUrl = place.ImageUrl.StartsWith("~") ? Url.Content(place.ImageUrl) : 
+                                                          place.ImageUrl.Contains("/") ? place.ImageUrl : 
+                                                          Url.Content($"~/Images/{System.IO.Path.GetFileName(place.ImageUrl)}");
+                                            <img src="@imageUrl" alt="@place.Name" 
+                                                 style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="place-placeholder" style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); display: none; align-items: center; justify-content: center; position: absolute; top: 0; left: 0;">
+                                                <div class="placeholder-icon" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; border: 1px solid rgba(255,255,255,0.2);">
+                                                    <i class="bi bi-geo-alt" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="place-placeholder" style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                                <div class="placeholder-icon" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; border: 1px solid rgba(255,255,255,0.2);">
+                                                    <i class="bi bi-geo-alt" style="font-size: 48px; color: rgba(255,255,255,0.9);"></i>
+                                                </div>
+                                                <!-- Floating particles -->
+                                                <div class="floating-particles">
+                                                    <div class="particle particle-1"></div>
+                                                    <div class="particle particle-2"></div>
+                                                    <div class="particle particle-3"></div>
+                                                </div>
+                                            </div>
+                                        }
+                                        
+                                        <!-- Quality Rating Stamp -->
+                                        <div class="position-absolute top-0 end-0 m-3">
+                                            @{
+                                                var avgRating = place.Rating;
+                                                var reviewCount = place.Reviews?.Count ?? 0;
+                                            }
+                                            <div class="rating-stamp" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); color: #ffd700; padding: 12px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; border: 2px solid rgba(255,215,0,0.3); box-shadow: 0 8px 25px rgba(255,215,0,0.2); position: relative;">
+                                                <div style="display: flex; align-items: center; gap: 5px;">
+                                                    <i class="bi bi-star-fill" style="color: #ffd700;"></i>
+                                                    <span style="color: white;">@avgRating</span>
+                                                </div>
+                                                @if (reviewCount > 0)
+                                                {
+                                                    <div style="font-size: 10px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 2px;">
+                                                        @reviewCount đánh giá
+                                                    </div>
+                                                }
+                                                <!-- Stamp effect -->
+                                                <div class="stamp-border" style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; border: 2px dashed rgba(255,215,0,0.4); border-radius: 20px; pointer-events: none;"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Category Badge on Image -->
+                                        @if (place.Category != null)
+                                        {
+                                            <div class="position-absolute top-0 start-0 m-3">
+                                                <div class="category-badge" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; box-shadow: 0 5px 15px rgba(102,126,234,0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
+                                                    <i class="bi bi-tag me-1"></i>@place.Category.Name
+                                                </div>
+                                            </div>
+                                        }
+                                        
+                                        <!-- Floating Action Button -->
+                                        <div class="position-absolute bottom-0 end-0 m-3">
+                                            <button class="btn floating-action-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(102,126,234,0.4);">
+                                                <i class="bi bi-arrow-right" style="color: white; font-size: 18px; font-weight: 600; transition: transform 0.3s ease;"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Modern Content -->
+                                    <div class="p-4" style="flex-grow: 1; display: flex; flex-direction: column; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                        <!-- Region Info -->
+                                        @if (place.Region != null)
+                                        {
+                                            <div class="region-info mb-3" style="display: flex; align-items: center; font-size: 12px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">
+                                                <i class="bi bi-pin-map me-2" style="color: #764ba2; font-size: 14px;"></i>
+                                                <span>@place.Region.Name</span>
+                                            </div>
+                                        }
+                                        
+                                        <!-- Place Name -->
+                                        <h3 class="mb-3" style="font-size: 22px; font-weight: 700; color: white; line-height: 1.2; flex-grow: 0; letter-spacing: -0.5px;">
+                                            @place.Name
+                                        </h3>
+                                        
+                                        <!-- Description Preview -->
+                                        @if (!string.IsNullOrEmpty(place.Description))
+                                        {
+                                            <p class="mb-4" style="color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.7; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                                @((place.Description?.Length > 120) ? place.Description.Substring(0, 120) + "..." : place.Description ?? "")
+                                            </p>
+                                        }
+                                        
+                                        <!-- Modern Footer -->
+                                        <div class="d-flex align-items-center justify-content-between mt-auto pt-3" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                                            <div class="explore-more" style="color: #667eea; font-weight: 600; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center;">
+                                                Khám phá <i class="bi bi-arrow-right ms-2 explore-arrow" style="transition: transform 0.3s ease;"></i>
+                                            </div>
+                                            <div class="place-meta" style="color: rgba(255,255,255,0.5); font-size: 12px; display: flex; align-items: center;">
+                                                <i class="bi bi-eye me-1"></i>
+                                                <span>@((new Random().Next(100, 800)))</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <!-- Modern Empty State -->
+                    <div class="col-12 text-center py-5">
+                        <div class="empty-state glassmorphism-panel" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border-radius: 25px; padding: 80px 50px; border: 1px solid rgba(255,255,255,0.1); max-width: 500px; margin: 0 auto;">
+                            <div class="empty-icon mb-4" style="background: linear-gradient(135deg, #667eea, #764ba2); width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                <i class="bi bi-geo-alt-fill" style="font-size: 40px; color: white;"></i>
+                            </div>
+                            <h3 class="mt-3 mb-3" style="color: white; font-size: 28px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;">Không tìm thấy địa điểm</h3>
+                            <p class="text-muted mb-4" style="color: rgba(255,255,255,0.6); font-size: 16px; line-height: 1.6;">
+                                Hãy thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác
+                            </p>
+                            <a href="@Url.Action("Index", "TouristPlace")" class="btn modern-reset-btn" 
+                               style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 20px; padding: 15px 30px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(102,126,234,0.4);">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Xem tất cả địa điểm
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Modern CSS Variables */
+    :root {
+        --primary-purple: #667eea;
+        --primary-purple-dark: #764ba2;
+        --accent-pink: #f093fb;
+        --glass-bg: rgba(255,255,255,0.05);
+        --glass-border: rgba(255,255,255,0.1);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255,255,255,0.8);
+        --text-muted: rgba(255,255,255,0.6);
+        --shadow-light: 0 15px 35px rgba(0,0,0,0.3);
+        --shadow-heavy: 0 25px 50px rgba(0,0,0,0.4);
+        --blur-light: blur(15px);
+        --blur-heavy: blur(25px);
+        --radius-sm: 15px;
+        --radius-md: 20px;
+        --radius-lg: 25px;
+        --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* Background Glow Effects */
+    .places-glow-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .glow-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(40px);
+        opacity: 0.4;
+        animation: placesGlow 15s ease-in-out infinite;
+    }
+
+    .glow-orb-1 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(102,126,234,0.4) 0%, transparent 70%);
+        top: 20%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .glow-orb-2 {
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(118,75,162,0.3) 0%, transparent 70%);
+        top: 60%;
+        right: 15%;
+        animation-delay: 5s;
+    }
+
+    .glow-orb-3 {
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(240,147,251,0.2) 0%, transparent 70%);
+        bottom: 30%;
+        left: 60%;
+        animation-delay: 10s;
+    }
+
+    /* Depth Texture Background */
+    .depth-texture-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .depth-grain {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.1;
+        animation: depthFloat 18s ease-in-out infinite;
+    }
+
+    .depth-grain-1 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        top: 10%;
+        right: 5%;
+        animation-delay: 0s;
+    }
+
+    .depth-grain-2 {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+        bottom: 20%;
+        left: 10%;
+        animation-delay: 6s;
+    }
+
+    .depth-grain-3 {
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        top: 50%;
+        left: 50%;
+        animation-delay: 12s;
+    }
+
+    /* Hero Section Animations */
+    .hero-title {
+        animation: fadeInUp 1s ease-out;
+    }
+    
+    .hero-subtitle {
+        animation: fadeInUp 1s ease-out 0.2s both;
+    }
+    
+    .hero-search-box {
+        animation: fadeInUp 1s ease-out 0.4s both;
+    }
+    
+    .hero-search-btn:hover {
+        background: linear-gradient(135deg, var(--primary-purple-dark), var(--accent-pink)) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102,126,234,0.5) !important;
+    }
+
+    .modern-search:focus {
+        box-shadow: 0 0 0 4px rgba(102,126,234,0.2) !important;
+        transform: scale(1.02);
+    }
+
+    /* Glassmorphism Sidebar */
+    .glassmorphism-sidebar {
+        backdrop-filter: var(--blur-heavy);
+        -webkit-backdrop-filter: var(--blur-heavy);
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glassmorphism-sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102,126,234,0.05), rgba(240,147,251,0.03));
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+        pointer-events: none;
+    }
+
+    .glassmorphism-sidebar:hover::before {
+        opacity: 1;
+    }
+
+    .glassmorphism-sidebar:hover {
+        background: rgba(255,255,255,0.08) !important;
+        border-color: rgba(255,255,255,0.15) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 30px rgba(102,126,234,0.1) !important;
+    }
+
+    /* Filter Pills */
+    .filter-pill {
+        transition: var(--transition-smooth);
+    }
+
+    .filter-pill:hover {
+        background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark)) !important;
+        color: white !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102,126,234,0.4);
+    }
+
+    .filter-pill.active {
+        box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+    }
+
+    /* Checklist Items */
+    .checklist-item {
+        transition: var(--transition-smooth);
+    }
+
+    .checklist-item:hover {
+        background: rgba(255,255,255,0.1) !important;
+        border-color: rgba(255,255,255,0.2) !important;
+        transform: translateX(5px);
+    }
+
+    .checklist-item:hover .check-icon {
+        background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark)) !important;
+    }
+
+    /* Modern Map Button */
+    .modern-map-btn:hover {
+        background: linear-gradient(135deg, var(--primary-purple-dark), var(--accent-pink)) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102,126,234,0.6) !important;
+    }
+
+    /* Modern Place Cards */
+    .modern-place-card {
+        transition: var(--transition-smooth);
+        backdrop-filter: var(--blur-heavy);
+        -webkit-backdrop-filter: var(--blur-heavy);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modern-place-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, transparent, rgba(102,126,234,0.05));
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+        pointer-events: none;
+        border-radius: inherit;
+    }
+
+    .modern-place-card:hover {
+        transform: translateY(-15px) scale(1.02);
+        box-shadow: 
+            0 30px 60px rgba(0,0,0,0.5),
+            0 0 40px rgba(102,126,234,0.3),
+            0 0 0 1px rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.08) !important;
+    }
+
+    .modern-place-card:hover::before {
+        opacity: 1;
+    }
+
+    .modern-place-card:hover .place-image-container img {
+        transform: scale(1.1);
+    }
+
+    .modern-place-card:hover .explore-more {
+        transform: translateX(8px);
+        color: #4a90e2 !important;
+    }
+
+    .modern-place-card:hover .explore-arrow {
+        transform: rotate(45deg);
+    }
+
+    .modern-place-card:hover .floating-action-btn {
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 12px 30px rgba(102,126,234,0.6) !important;
+    }
+
+    .modern-place-card:hover .floating-action-btn i {
+        transform: rotate(-90deg);
+    }
+
+    .modern-place-card:hover .rating-stamp {
+        transform: scale(1.05);
+        box-shadow: 0 12px 30px rgba(255,215,0,0.4) !important;
+    }
+
+    .modern-place-card:hover .category-badge {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(102,126,234,0.6) !important;
+    }
+
+    /* Place Image Effects */
+    .place-image-container {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .place-image-container::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+        pointer-events: none;
+    }
+
+    .modern-place-card:hover .place-image-container::after {
+        transform: translateX(100%);
+    }
+
+    /* Floating Particles */
+    .floating-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+    }
+
+    .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: rgba(255,255,255,0.6);
+        border-radius: 50%;
+        animation: floatParticle 6s ease-in-out infinite;
+    }
+
+    .particle-1 {
+        top: 20%;
+        left: 20%;
+        animation-delay: 0s;
+    }
+
+    .particle-2 {
+        top: 60%;
+        right: 30%;
+        animation-delay: 2s;
+    }
+
+    .particle-3 {
+        bottom: 30%;
+        left: 70%;
+        animation-delay: 4s;
+    }
+
+    /* Rating Stamp Effects */
+    .rating-stamp {
+        transition: var(--transition-smooth);
+        position: relative;
+    }
+
+    .rating-stamp::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: pulse 2s infinite;
+        pointer-events: none;
+    }
+
+    /* Enhanced Empty State */
+    .empty-state:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 35px 70px rgba(0,0,0,0.6),
+            0 0 40px rgba(102,126,234,0.2) !important;
+    }
+
+    .modern-reset-btn:hover {
+        background: linear-gradient(135deg, var(--primary-purple-dark), var(--accent-pink)) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102,126,234,0.6) !important;
+    }
+
+    /* Glassmorphism Panel Effects */
+    .glassmorphism-panel {
+        backdrop-filter: var(--blur-heavy);
+        -webkit-backdrop-filter: var(--blur-heavy);
+        transition: var(--transition-smooth);
+    }
+
+    /* Region Info Hover */
+    .region-info {
+        transition: var(--transition-smooth);
+    }
+
+    .modern-place-card:hover .region-info {
+        color: rgba(255,255,255,0.8) !important;
+    }
+
+    /* Place Meta Hover */
+    .place-meta {
+        transition: var(--transition-smooth);
+    }
+
+    .modern-place-card:hover .place-meta {
+        color: rgba(255,255,255,0.7) !important;
+    }
+
+    /* Scrollbar Styling */
+    .glassmorphism-sidebar {
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+
+    .glassmorphism-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .glassmorphism-sidebar::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+    }
+
+    .glassmorphism-sidebar::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark));
+        border-radius: 3px;
+    }
+
+    .glassmorphism-sidebar::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, var(--primary-purple-dark), var(--accent-pink));
+    }
+</style>
+
+@{
+    string placesKeyframes = @"
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes placesGlow {
+            0%, 100% { 
+                transform: translateY(0px) scale(1);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translateY(-20px) scale(1.1);
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes depthFloat {
+            0%, 100% { 
+                transform: translateX(0px) translateY(0px);
+                opacity: 0.1;
+            }
+            25% { 
+                transform: translateX(20px) translateY(-10px);
+                opacity: 0.15;
+            }
+            50% { 
+                transform: translateX(-10px) translateY(15px);
+                opacity: 0.08;
+            }
+            75% { 
+                transform: translateX(15px) translateY(-5px);
+                opacity: 0.12;
+            }
+        }
+
+        @keyframes floatParticle {
+            0%, 100% { 
+                transform: translateY(0px) scale(1);
+                opacity: 0.6;
+            }
+            50% { 
+                transform: translateY(-15px) scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.2; }
+            50% { transform: scale(1.1); opacity: 0.4; }
+        }
+    ";
+    
+    string placesResponsiveCSS = @"
+        @media (max-width: 992px) {
+            .glassmorphism-sidebar {
+                position: relative !important;
+                top: 0 !important;
+                margin-bottom: 30px;
+            }
+
+            #places-section {
+                padding: 20px 0;
+            }
+
+            .hero-section {
+                height: 50vh !important;
+                margin-top: 60px !important;
+            }
+
+            .hero-title {
+                font-size: 2.8rem !important;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem !important;
+            }
+
+            .hero-search-box {
+                padding: 20px !important;
+            }
+
+            .filter-pills-container {
+                justify-content: center !important;
+            }
+
+            .glow-orb, .depth-grain {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                height: 40vh !important;
+            }
+
+            .hero-title {
+                font-size: 2.2rem !important;
+            }
+
+            .hero-search-box .d-flex {
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+
+            .hero-search-btn {
+                width: 100% !important;
+            }
+
+            .place-image-container {
+                height: 250px !important;
+            }
+
+            .glassmorphism-sidebar {
+                padding: 20px !important;
+            }
+
+            .filter-pills-container {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .filter-pill {
+                justify-content: center !important;
+                margin-bottom: 8px !important;
+            }
+
+            .modern-place-card {
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-search-box {
+                margin: 0 20px !important;
+            }
+
+            .container-fluid {
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+            }
+        }
+    ";
+}
+
+<style>
+    @Html.Raw(placesKeyframes)
+    @Html.Raw(placesResponsiveCSS)
+</style>
